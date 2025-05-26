@@ -1,4 +1,4 @@
-from wealth.core.finance import Finance
+from wealth.core.finance import Finance, FinanceSummary
 from wealth.core.strategies import BudgetingStrategy, DebtStrategy, RiskStrategy
 
 class FinanceEngine:
@@ -10,10 +10,11 @@ class FinanceEngine:
         debt.pay_debt(self.finance)
         risk.evaluate(self.finance)
 
-    def summary(self) -> dict:
-        return {
-            "net_worth": self.finance.total_net_worth(),
-            "investment_count": len(self.finance.investments),
-            "debt_count": len(self.finance.debts),
-            "allocation_count": len(self.finance.allocations),
-        }
+    def summary(self) -> FinanceSummary:
+        return FinanceSummary(
+            net_worth=self.finance.total_net_worth(),
+            investment_count=len(self.finance.investments),
+            debt_count=len(self.finance.debts),
+            allocation_count=len(self.finance.allocations)
+        )
+

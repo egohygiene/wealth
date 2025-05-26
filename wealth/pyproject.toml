@@ -9,13 +9,14 @@ description = ""
 authors = ["Alan Szmyt <szmyty@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-# packages = [{ include = "cli" }]
+packages = [{ include = "wealth" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-
-# [tool.poetry.scripts]
-# cli = "cli.cli:cli"
 pydantic = "^2.11.5"
 pandas = "^2.2.3"
 faker = "^37.3.0"
+click = "^8.2.1"
+
+[tool.poetry.scripts]
+wealth = "wealth.cli:cli"

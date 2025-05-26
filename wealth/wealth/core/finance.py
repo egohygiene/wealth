@@ -6,6 +6,19 @@ from wealth.models import (
     Portfolio, RiskProfile, Service
 )
 
+class FinanceSummary(BaseModel):
+    net_worth: float
+    investment_count: int
+    debt_count: int
+    allocation_count: int
+
+    def to_dict(self):
+        return self.model_dump()
+
+    def to_json(self, indent: Optional[int] = 4):
+        return self.model_dump_json(indent=indent)
+
+
 class Finance(BaseModel):
     user_id: str
 

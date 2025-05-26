@@ -1,9 +1,12 @@
 # 🧱 Base
 from .wealth import Wealth
 
+# 📅 Frequency
+from .frequency import Frequency
+
 # 💸 Income & Expense
-from .income import Income, IncomeType, IncomeFrequency
-from .expense import Expense, ExpenseCategory, ExpenseFrequency
+from .income import Income, IncomeType
+from .expense import Expense, ExpenseCategory
 
 # 💰 Allocation & Debt
 from .allocation import Allocation, AllocationType
@@ -25,10 +28,11 @@ from .lifecycle import LifecyclePhase
 # 🏦 All Models
 __all__ = [
     "Wealth",
-    "Income", "IncomeType", "IncomeFrequency",
-    "Expense", "ExpenseCategory", "ExpenseFrequency",
+    "Income", "IncomeType",
+    "Expense", "ExpenseCategory",
     "Allocation", "AllocationType",
     "Debt", "DebtType", "DebtStatus",
+    "Frequency",
     "Investment", "Portfolio",
     "Risk", "RiskType", "RiskProfile",
     "Service",

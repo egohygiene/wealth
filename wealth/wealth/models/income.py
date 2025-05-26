@@ -2,6 +2,7 @@ from enum import Enum, unique
 from pydantic import Field
 
 from wealth.models.wealth import Wealth
+from wealth.models.frequency import Frequency
 
 @unique
 class IncomeType(str, Enum):
@@ -23,22 +24,8 @@ class IncomeType(str, Enum):
     WINDFALL = "windfall"                # Lottery, inheritance, lawsuit settlements
     OTHER = "other"                      # Unclassified or misc income
 
-@unique
-class IncomeFrequency(str, Enum):
-    ONE_TIME = "one_time"
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    BIWEEKLY = "biweekly"
-    SEMIMONTHLY = "semimonthly"  # 2x per month, e.g. 1st and 15th
-    MONTHLY = "monthly"
-    BIMONTHLY = "bimonthly"
-    QUARTERLY = "quarterly"
-    SEMIANNUALLY = "semiannually"
-    ANNUALLY = "annually"
-    IRREGULAR = "irregular"
-
 class Income(Wealth):
     source: str = Field(..., description="Name of the income source, e.g. MIT, Spotify, Freelance Client")
     amount: float = Field(0.0, description="Gross amount of income per cycle")
-    frequency: IncomeFrequency = Field(default=IncomeFrequency.MONTHLY, description="How often this income is received")
+    frequency: Frequency = Field(default=Frequency.MONTHLY, description="How often this income is received")
     type: IncomeType = Field(default=IncomeType.ACTIVE, description="Type of income source")

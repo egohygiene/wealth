@@ -3,6 +3,7 @@ from pydantic import Field
 from datetime import datetime, timezone
 
 from wealth.models.wealth import Wealth
+from wealth.models.frequency import Frequency
 
 @unique
 class ExpenseCategory(str, Enum):
@@ -27,23 +28,9 @@ class ExpenseCategory(str, Enum):
     INVESTMENT = "investment"
     OTHER = "other"
 
-@unique
-class ExpenseFrequency(str, Enum):
-    ONE_TIME = "one_time"
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    BIWEEKLY = "biweekly"
-    SEMIMONTHLY = "semimonthly"
-    MONTHLY = "monthly"
-    BIMONTHLY = "bimonthly"
-    QUARTERLY = "quarterly"
-    SEMIANNUALLY = "semiannually"
-    ANNUALLY = "annually"
-    IRREGULAR = "irregular"
-
 class Expense(Wealth):
     amount: float = Field(..., description="The cost of the expense")
     date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="The date the expense occurred")
     category: ExpenseCategory = Field(default=ExpenseCategory.OTHER, description="Type of expense for reporting and analysis")
-    frequency: ExpenseFrequency = Field(default=ExpenseFrequency.ONE_TIME, description="How often this expense recurs")
+    frequency: Frequency = Field(default=Frequency.ONE_TIME, description="How often this expense recurs")
     source_account: str = Field(..., description="Bank or account from which the payment was made")

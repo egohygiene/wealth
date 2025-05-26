@@ -5,9 +5,11 @@ from pydantic import BaseModel, Field
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from wealth.core.utils import format_currency
+
 from wealth.models import (
     Allocation, Expense, Income, Debt, Investment, LifecyclePhase,
-    Portfolio, RiskProfile, Service
+    Portfolio, RiskProfile, Service, Frequency
 )
 
 class FinanceSummary(BaseModel):
@@ -64,6 +66,11 @@ class Finance(BaseModel):
             allocation.user_id = self.user_id
         self.allocations.append(allocation)
 
+    def add_allocations(self, allocations: List[Allocation]):
+        """Adds multiple allocations using the single-object add_allocation method."""
+        for allocation in allocations:
+            self.add_allocation(allocation)
+
     @classmethod
     def default(cls, user_id: str, notes: Optional[str] = None) -> Finance:
         return cls(
@@ -93,30 +100,56 @@ class Finance(BaseModel):
                 breakdown[alloc.name] = round(alloc.budget_amount, 2)
         return breakdown
 
-    def plot_allocation_chart(self, show: bool = True, save_path: Optional[str] = None):
-        # pyright: ignore[reportMissingTypeStubs]
-        import plotly.express as px # type: ignore
+    def plot_allocation_chart(
+        self,
+        frequency: Frequency = Frequency.MONTHLY,
+        show: bool = True,
+        save_path: Optional[str] = None
+    ):
+        import plotly.express as px  # type: ignore
+        from pathlib import Path
 
         breakdown = self.get_allocation_breakdown()
         if not breakdown:
             print("No allocation data to display.")
             return
 
-        labels = list(breakdown.keys())
-        values = list(breakdown.values())
+        # 💡 Frequency conversion via enum method
+        transformed = {k: frequency.from_monthly(v) for k, v in breakdown.items()}
 
+        names = list(transformed.keys())
+        values = list(transformed.values())
+        formatted_values = [format_currency(v) for v in values]
+
+        # ✨ Create DataFrame with custom hover data
+        import pandas as pd
+        df = pd.DataFrame({
+            "label": names,
+            "value": values,
+            "formatted": formatted_values
+        })
+
+        # 📈 Build pie chart with custom data
         fig = px.pie(
-            names=labels,
-            values=values,
-            title="Allocation Breakdown",
-            hole=0.3  # Donut-style
+            df,
+            names="label",
+            values="value",
+            title=f"Allocation Breakdown – {frequency.value.replace('_', ' ').title()}",
+            hole=0.3,
+            custom_data=["formatted"]
+        )
+
+        # ✅ Show only % on chart, and formatted currency in hover
+        fig.update_traces(
+            textinfo="percent",
+            hovertemplate="%{label}<br>%{customdata[0]}<extra></extra>"
         )
 
         if save_path:
-            save_path: Path = Path(save_path)
-            save_path.parent.mkdir(parents=True, exist_ok=True)
-            fig.write_image(save_path)
-            print(f"✅ Plotly chart saved to {save_path}")
+            output_path: Path = Path(save_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            fig.write_image(output_path)
+            print(f"✅ Plotly chart saved to {output_path}")
 
         if show:
             fig.show()

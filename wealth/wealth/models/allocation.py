@@ -4,6 +4,7 @@ from pydantic import Field
 from wealth.models.wealth import Wealth
 from wealth.models.risk import Risk, RiskType
 from wealth.models.services import Service
+from wealth.models.frequency import Frequency
 
 @unique
 class AllocationType(str, Enum):
@@ -21,3 +22,4 @@ class Allocation(Wealth):
     tags: List[str] = Field(default_factory=list)
     services: List[Service] = Field(default_factory=list, description="List of relevant services tied to this allocation")
     active: bool = Field(default=True, description="Is this allocation currently part of the active plan?")
+    frequency: Frequency = Field(default=Frequency.MONTHLY)

@@ -1,0 +1,15 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/wealth/.venv/bin/python3",
+    "python.analysis.enablePerfTelemetry": false,
+    "python.analysis.enableColorPicker": false,
+    "python.analysis.enableAsyncProgram": false,
+    "python.analysis.displayEnglishDiagnostics": false,
+    "python.analysis.disableTaggedHints": false,
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.addHoverSummaries": true,
+    "cSpell.words": [
+        "pydantic",
+        "virtualenvs"
+    ]
+}

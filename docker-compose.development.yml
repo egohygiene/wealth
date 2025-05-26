@@ -1,0 +1,16 @@
+services:
+  api:
+    command: uvicorn services.api.main:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - ./services/api:/app/services/api
+      - ./wealth:/app/wealth
+    env_file:
+      - .env.development
+
+  ui:
+    command: pnpm dev --host
+    volumes:
+      - ./apps/ui:/app
+    env_file:
+      - .env.development
+

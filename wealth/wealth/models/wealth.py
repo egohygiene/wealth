@@ -28,7 +28,7 @@ class Wealth(BaseModel):
     def to_dict(self):
         return self.model_dump()
 
-    def to_json(self, indent: int = 4, **kwargs: Any):
+    def to_json(self, indent: Optional[int] = 4, **kwargs: Any):
         return self.model_dump_json(indent=indent, **kwargs)
 
     def to_dataframe(self) -> pd.DataFrame:

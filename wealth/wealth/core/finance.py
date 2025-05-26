@@ -38,5 +38,5 @@ class Finance(BaseModel):
     def to_dict(self):
         return self.model_dump()
 
-    def to_json(self):
-        return self.model_dump_json(indent=4)
+    def to_json(self, indent: Optional[int] = 4):
+        return self.model_dump_json(indent=indent)

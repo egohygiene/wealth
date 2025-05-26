@@ -36,3 +36,16 @@ Run the development server:
 pnpm dev
 ```
 
+
+## Docker Compose
+
+Several compose files are provided to make running the API and UI in different environments easy. The base configuration lives in `docker-compose.base.yml` and environment specific overrides are available for development, staging, demo and production.
+
+Example usage for development:
+
+```bash
+docker-compose -f docker-compose.base.yml -f docker-compose.development.yml up --build
+```
+
+To use a different environment replace `development` with `production`, `staging` or `demo` and provide the matching `.env.*` file.
+

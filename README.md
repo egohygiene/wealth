@@ -20,3 +20,19 @@ Start the API for development with:
 uvicorn services.api.main:app --reload
 ```
 
+
+## UI
+
+A Vite + React application is located in `apps/ui`. Install dependencies with pnpm:
+
+```sh
+cd apps/ui
+pnpm install
+```
+
+Run the development server:
+
+```sh
+pnpm dev
+```
+

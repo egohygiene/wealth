@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  lint:
+    desc: Run MegaLinter without auto-fix
+    cmds:
+      - pnpm dlx mega-linter-runner --no-banner
+
+  lint:fix:
+    desc: Run MegaLinter with auto-fix
+    cmds:
+      - pnpm dlx mega-linter-runner --fix --no-banner

@@ -3,17 +3,24 @@
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0002_create_map_states_table"
-down_revision = "0001_create_messages_table"
+from services.api.constants import (
+    MAP_STATES_TABLE,
+    USERS_TABLE,
+    REVISION_CREATE_MAP_STATES_TABLE,
+    REVISION_CREATE_MESSAGES_TABLE,
+)
+
+revision = REVISION_CREATE_MAP_STATES_TABLE
+down_revision = REVISION_CREATE_MESSAGES_TABLE
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
     op.create_table(
-        "map_states",
+        MAP_STATES_TABLE,
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("user_id", sa.String(), sa.ForeignKey("users.id"), nullable=False),
+        sa.Column("user_id", sa.String(), sa.ForeignKey(f"{USERS_TABLE}.id"), nullable=False),
         sa.Column("state", sa.JSON(), nullable=False),
         sa.Column(
             "created_at",
@@ -32,4 +39,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("map_states")
+    op.drop_table(MAP_STATES_TABLE)

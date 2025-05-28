@@ -1,11 +1,13 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
+from services.api.constants import USERS_TABLE
+
 from .base import Base
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = USERS_TABLE
 
     id = Column(String, primary_key=True)
     preferred_username = Column(String, nullable=True)

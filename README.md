@@ -81,3 +81,17 @@ pnpm changeset
 
 Commit the generated file inside `.changeset/`. Merging to `main` will trigger the release workflow which versions and publishes any packages.
 
+## Linting
+
+MegaLinter checks formatting and common issues across all packages. Run it locally with:
+
+```bash
+task lint
+```
+
+To automatically fix problems run:
+
+```bash
+task lint:fix
+```
+

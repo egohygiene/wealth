@@ -1,0 +1,17 @@
+{
+  "name": "wealth-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
+    "build": "pnpm -r run build"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2"
+  }
+}

@@ -9,6 +9,10 @@ services:
     env_file:
       - .env.staging
 
+  apache:
+    env_file:
+      - .env.staging
+
   keycloak:
     env_file:
       - .env.staging

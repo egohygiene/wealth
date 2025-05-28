@@ -69,6 +69,9 @@ Example usage for development:
 docker-compose -f docker-compose.base.yml -f docker-compose.development.yml up --build
 ```
 
+The compose setup now includes an Apache service for the UI. In development it
+exposes ports `8085` and `8086` for HTTP and HTTPS by default.
+
 To use a different environment replace `development` with `production`, `staging` or `demo` and provide the matching `.env.*` file.
 
 ## Releases

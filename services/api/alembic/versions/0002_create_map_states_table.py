@@ -1,4 +1,4 @@
-"""create users and map_states tables"""
+"""create map_states table"""
 
 from alembic import op
 import sqlalchemy as sa
@@ -10,16 +10,6 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.create_table(
-        "users",
-        sa.Column("id", sa.String(), primary_key=True),
-        sa.Column("preferred_username", sa.String(), nullable=True),
-        sa.Column("email", sa.String(), nullable=True),
-    )
-
-    op.add_column("messages", sa.Column("user_id", sa.String(), nullable=False))
-    op.create_foreign_key(None, "messages", "users", ["user_id"], ["id"])
-
     op.create_table(
         "map_states",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -43,6 +33,3 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("map_states")
-    op.drop_constraint(None, "messages", type_="foreignkey")
-    op.drop_column("messages", "user_id")
-    op.drop_table("users")

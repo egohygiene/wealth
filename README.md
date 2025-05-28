@@ -70,3 +70,14 @@ docker-compose -f docker-compose.base.yml -f docker-compose.development.yml up -
 ```
 
 To use a different environment replace `development` with `production`, `staging` or `demo` and provide the matching `.env.*` file.
+
+## Releases
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning. When you make changes that should trigger a release, run:
+
+```sh
+pnpm changeset
+```
+
+Commit the generated file inside `.changeset/`. Merging to `main` will trigger the release workflow which versions and publishes any packages.
+

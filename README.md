@@ -59,6 +59,11 @@ Run the development server:
 pnpm dev
 ```
 
+The UI relies on `VITE_API_BASE_URL` and related variables to know where the API
+and authentication services live. These values are read from the `.env.*` files
+used by Docker Compose so each environment automatically points to the correct
+services.
+
 ### Docker Compose
 
 Several compose files make it easy to run the API and UI in different environments. The base configuration lives in `docker-compose.base.yml`, with environment-specific overrides for development, staging, demo and production.

@@ -13,4 +13,4 @@ RUN pnpm install
 COPY . .
 
 EXPOSE 5173
-CMD ["pnpm", "dev", "--host"]
+CMD ["sh", "-c", "pnpm dev --host --port ${UI_PORT:-5173}"]

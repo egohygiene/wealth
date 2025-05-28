@@ -3,30 +3,28 @@ from pydantic import BaseModel
 import asyncpg
 from fastapi_keycloak import FastAPIKeycloak, OIDCUser
 from authlib.integrations.starlette_client import OAuth
-import os
+
+from .config import get_config
 
 app = FastAPI(title="Wealth API")
 
-# Database configuration from environment
-DB_HOST = os.getenv("API_DB_HOST", "localhost")
-DB_PORT = os.getenv("API_DB_PORT", "5432")
-DB_USER = os.getenv("API_DB_USER", "wealth")
-DB_PASSWORD = os.getenv("API_DB_PASSWORD", "wealthpass")
-DB_NAME = os.getenv("API_DB_NAME", "wealth")
+config = get_config()
+
 DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    f"postgresql://{config.db_user}:{config.db_password}@"
+    f"{config.db_host}:{config.db_port}/{config.db_name}"
 )
 
 db_pool: asyncpg.Pool | None = None
 
 # Configure Keycloak connection. Adjust URLs and secrets for your environment.
 keycloak = FastAPIKeycloak(
-    server_url="http://localhost:8080/auth/",
-    client_id="wealth-api",
-    client_secret="CHANGE_ME",
-    admin_client_secret="CHANGE_ME",
-    realm="wealth",
-    redirect_uri="http://localhost:8000/callback",
+    server_url=config.keycloak_server_url,
+    client_id=config.keycloak_client_id,
+    client_secret=config.keycloak_client_secret,
+    admin_client_secret=config.keycloak_admin_client_secret,
+    realm=config.keycloak_realm,
+    redirect_uri=config.keycloak_redirect_uri,
 )
 
 # Configure Google OAuth2
@@ -34,8 +32,8 @@ oauth = OAuth()
 oauth.register(
     name="google",
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_id=os.getenv("GOOGLE_CLIENT_ID", "CHANGE_ME"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET", "CHANGE_ME"),
+    client_id=config.google_client_id,
+    client_secret=config.google_client_secret,
     client_kwargs={"scope": "openid email profile"},
 )
 

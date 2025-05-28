@@ -1,12 +1,16 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { useGetFinanceSummaryQuery } from './features/api/apiSlice'
 import Chart from './components/Chart'
+import AuthStatus from './components/AuthStatus'
 
 function Home() {
   const { data, isLoading } = useGetFinanceSummaryQuery()
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Home</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Home</h1>
+        <AuthStatus />
+      </div>
       {isLoading ? 'Loading...' : <pre>{JSON.stringify(data, null, 2)}</pre>}
       <Chart />
     </div>

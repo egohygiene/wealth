@@ -3,7 +3,13 @@
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0001_create_messages_table"
+from services.api.constants import (
+    MESSAGES_TABLE,
+    USERS_TABLE,
+    REVISION_CREATE_MESSAGES_TABLE,
+)
+
+revision = REVISION_CREATE_MESSAGES_TABLE
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -11,16 +17,16 @@ depends_on = None
 
 def upgrade() -> None:
     op.create_table(
-        "users",
+        USERS_TABLE,
         sa.Column("id", sa.String(), primary_key=True),
         sa.Column("preferred_username", sa.String(), nullable=True),
         sa.Column("email", sa.String(), nullable=True),
     )
 
     op.create_table(
-        "messages",
+        MESSAGES_TABLE,
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("user_id", sa.String(), sa.ForeignKey("users.id"), nullable=False),
+        sa.Column("user_id", sa.String(), sa.ForeignKey(f"{USERS_TABLE}.id"), nullable=False),
         sa.Column("message", sa.Text(), nullable=False, server_default="Hello World"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column(
@@ -33,5 +39,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("messages")
-    op.drop_table("users")
+    op.drop_table(MESSAGES_TABLE)
+    op.drop_table(USERS_TABLE)

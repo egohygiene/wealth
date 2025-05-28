@@ -3,11 +3,12 @@ from fastapi_keycloak import FastAPIKeycloak, OIDCUser
 from authlib.integrations.starlette_client import OAuth
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from .config import get_config
 from .database import engine, get_session
 from .migrations import run_migrations_async
-from .models import Message
+from .models import Message, User
 from .schemas import MessageCreate, MessageRead
 
 app = FastAPI(title="Wealth API")
@@ -80,7 +81,17 @@ async def create_message(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(keycloak.get_current_user()),
 ):
-    message = Message(message=message_in.message)
+    db_user = await session.get(User, user.sub)
+    if not db_user:
+        db_user = User(
+            id=user.sub,
+            preferred_username=user.preferred_username,
+            email=user.email,
+        )
+        session.add(db_user)
+        await session.flush()
+
+    message = Message(message=message_in.message, user=db_user)
     session.add(message)
     await session.commit()
     await session.refresh(message)
@@ -92,5 +103,7 @@ async def read_messages(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(keycloak.get_current_user()),
 ):
-    result = await session.execute(select(Message))
+    result = await session.execute(
+        select(Message).options(selectinload(Message.user))
+    )
     return result.scalars().all()

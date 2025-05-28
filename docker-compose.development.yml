@@ -14,3 +14,7 @@ services:
     env_file:
       - .env.development
 
+  keycloak:
+    env_file:
+      - .env.development
+

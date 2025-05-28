@@ -1,21 +1,18 @@
-from fastapi import FastAPI, Depends, Request
-from pydantic import BaseModel
-import asyncpg
+from fastapi import Depends, FastAPI, Request
 from fastapi_keycloak import FastAPIKeycloak, OIDCUser
 from authlib.integrations.starlette_client import OAuth
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from .config import get_config
+from .database import engine, get_session
+from .migrations import run_migrations_async
+from .models import Message
+from .schemas import MessageCreate, MessageRead
 
 app = FastAPI(title="Wealth API")
 
 config = get_config()
-
-DATABASE_URL = (
-    f"postgresql://{config.db_user}:{config.db_password}@"
-    f"{config.db_host}:{config.db_port}/{config.db_name}"
-)
-
-db_pool: asyncpg.Pool | None = None
 
 # Configure Keycloak connection. Adjust URLs and secrets for your environment.
 keycloak = FastAPIKeycloak(
@@ -37,42 +34,22 @@ oauth.register(
     client_kwargs={"scope": "openid email profile"},
 )
 
-# Initialise the connection on startup
-@app.on_event("startup")
-async def startup_event():
-    await keycloak.load_config()
-    global db_pool
-    db_pool = await asyncpg.create_pool(DATABASE_URL)
-    async with db_pool.acquire() as conn:
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS locations (
-                id SERIAL PRIMARY KEY,
-                name TEXT,
-                geom geometry(Point, 4326)
-            )
-            """
-        )
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS posts (
-                id SERIAL PRIMARY KEY,
-                user_id TEXT,
-                content TEXT
-            )
-            """
-        )
 
-# Close database connections on shutdown
+@app.on_event("startup")
+async def startup_event() -> None:
+    await keycloak.load_config()
+    await run_migrations_async()
+
+
 @app.on_event("shutdown")
-async def shutdown_event():
-    if db_pool:
-        await db_pool.close()
+async def shutdown_event() -> None:
+    await engine.dispose()
+
 
 # Expose authentication routes (login, callback, etc.)
 app.include_router(keycloak.get_auth_router())
 
-# Google authentication routes
+
 @app.get("/login/google")
 async def login_google(request: Request):
     redirect_uri = request.url_for("google_callback")
@@ -88,7 +65,7 @@ async def google_callback(request: Request):
         "google_id": user.get("sub"),
     }
 
-# Example protected endpoint
+
 @app.get("/me")
 def read_current_user(user: OIDCUser = Depends(keycloak.get_current_user())):
     return {
@@ -97,69 +74,23 @@ def read_current_user(user: OIDCUser = Depends(keycloak.get_current_user())):
     }
 
 
-class Location(BaseModel):
-    name: str
-    latitude: float
-    longitude: float
-
-
-class PostIn(BaseModel):
-    content: str
-
-
-class Post(PostIn):
-    id: int
-    user_id: str
-
-
-@app.post("/locations")
-async def create_location(location: Location):
-    if not db_pool:
-        raise RuntimeError("Database not initialized")
-    async with db_pool.acquire() as conn:
-        await conn.execute(
-            "INSERT INTO locations (name, geom) VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326))",
-            location.name,
-            location.longitude,
-            location.latitude,
-        )
-    return {"status": "ok"}
-
-
-@app.get("/locations")
-async def read_locations():
-    if not db_pool:
-        raise RuntimeError("Database not initialized")
-    async with db_pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT id, name, ST_Y(geom) AS latitude, ST_X(geom) AS longitude FROM locations"
-        )
-        return [dict(row) for row in rows]
-
-
-@app.post("/posts", response_model=Post)
-async def create_post(
-    post: PostIn, user: OIDCUser = Depends(keycloak.get_current_user())
+@app.post("/messages", response_model=MessageRead)
+async def create_message(
+    message_in: MessageCreate,
+    session: AsyncSession = Depends(get_session),
+    user: OIDCUser = Depends(keycloak.get_current_user()),
 ):
-    if not db_pool:
-        raise RuntimeError("Database not initialized")
-    async with db_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "INSERT INTO posts (user_id, content) VALUES ($1, $2) RETURNING id",
-            user.sub,
-            post.content,
-        )
-        return Post(id=row["id"], user_id=user.sub, content=post.content)
+    message = Message(message=message_in.message)
+    session.add(message)
+    await session.commit()
+    await session.refresh(message)
+    return message
 
 
-@app.get("/posts", response_model=list[Post])
-async def read_posts(user: OIDCUser = Depends(keycloak.get_current_user())):
-    if not db_pool:
-        raise RuntimeError("Database not initialized")
-    async with db_pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT id, user_id, content FROM posts WHERE user_id = $1",
-            user.sub,
-        )
-        return [Post(id=row["id"], user_id=row["user_id"], content=row["content"]) for row in rows]
-
+@app.get("/messages", response_model=list[MessageRead])
+async def read_messages(
+    session: AsyncSession = Depends(get_session),
+    user: OIDCUser = Depends(keycloak.get_current_user()),
+):
+    result = await session.execute(select(Message))
+    return result.scalars().all()

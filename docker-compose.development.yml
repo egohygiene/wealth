@@ -14,6 +14,15 @@ services:
     env_file:
       - .env.development
 
+  apache:
+    volumes:
+      - ./services/apache/development/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./services/apache/development/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro
+      - ./services/apache/development/certs:/usr/local/apache2/conf/certs:ro
+      - ./apps/ui/dist:/usr/local/apache2/htdocs:ro
+    env_file:
+      - .env.development
+
   keycloak:
     env_file:
       - .env.development

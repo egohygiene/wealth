@@ -9,6 +9,10 @@ services:
     env_file:
       - .env.production
 
+  apache:
+    env_file:
+      - .env.production
+
   keycloak:
     env_file:
       - .env.production

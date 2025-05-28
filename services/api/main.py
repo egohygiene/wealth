@@ -55,6 +55,15 @@ async def startup_event():
             )
             """
         )
+        await conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS posts (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT,
+                content TEXT
+            )
+            """
+        )
 
 # Close database connections on shutdown
 @app.on_event("shutdown")
@@ -96,6 +105,15 @@ class Location(BaseModel):
     longitude: float
 
 
+class PostIn(BaseModel):
+    content: str
+
+
+class Post(PostIn):
+    id: int
+    user_id: str
+
+
 @app.post("/locations")
 async def create_location(location: Location):
     if not db_pool:
@@ -119,3 +137,31 @@ async def read_locations():
             "SELECT id, name, ST_Y(geom) AS latitude, ST_X(geom) AS longitude FROM locations"
         )
         return [dict(row) for row in rows]
+
+
+@app.post("/posts", response_model=Post)
+async def create_post(
+    post: PostIn, user: OIDCUser = Depends(keycloak.get_current_user())
+):
+    if not db_pool:
+        raise RuntimeError("Database not initialized")
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "INSERT INTO posts (user_id, content) VALUES ($1, $2) RETURNING id",
+            user.sub,
+            post.content,
+        )
+        return Post(id=row["id"], user_id=user.sub, content=post.content)
+
+
+@app.get("/posts", response_model=list[Post])
+async def read_posts(user: OIDCUser = Depends(keycloak.get_current_user())):
+    if not db_pool:
+        raise RuntimeError("Database not initialized")
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT id, user_id, content FROM posts WHERE user_id = $1",
+            user.sub,
+        )
+        return [Post(id=row["id"], user_id=row["user_id"], content=row["content"]) for row in rows]
+

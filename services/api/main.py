@@ -8,8 +8,13 @@ from sqlalchemy.orm import selectinload
 from .config import get_config
 from .database import engine, get_session
 from .migrations import run_migrations_async
-from .models import Message, User
-from .schemas import MessageCreate, MessageRead
+from .models import MapState, Message, User
+from .schemas import (
+    MapStateCreate,
+    MapStateRead,
+    MessageCreate,
+    MessageRead,
+)
 
 app = FastAPI(title="Wealth API")
 
@@ -105,5 +110,39 @@ async def read_messages(
 ):
     result = await session.execute(
         select(Message).options(selectinload(Message.user))
+    )
+    return result.scalars().all()
+
+
+@app.post("/map_states", response_model=MapStateRead)
+async def create_map_state(
+    map_state_in: MapStateCreate,
+    session: AsyncSession = Depends(get_session),
+    user: OIDCUser = Depends(keycloak.get_current_user()),
+):
+    db_user = await session.get(User, user.sub)
+    if not db_user:
+        db_user = User(
+            id=user.sub,
+            preferred_username=user.preferred_username,
+            email=user.email,
+        )
+        session.add(db_user)
+        await session.flush()
+
+    map_state = MapState(state=map_state_in.state, user=db_user)
+    session.add(map_state)
+    await session.commit()
+    await session.refresh(map_state)
+    return map_state
+
+
+@app.get("/map_states", response_model=list[MapStateRead])
+async def read_map_states(
+    session: AsyncSession = Depends(get_session),
+    user: OIDCUser = Depends(keycloak.get_current_user()),
+):
+    result = await session.execute(
+        select(MapState).options(selectinload(MapState.user))
     )
     return result.scalars().all()

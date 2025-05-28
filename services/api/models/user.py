@@ -12,3 +12,4 @@ class User(Base):
     email = Column(String, nullable=True)
 
     messages = relationship("Message", back_populates="user")
+    map_states = relationship("MapState", back_populates="user")

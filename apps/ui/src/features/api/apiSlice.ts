@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { Finance, FinanceSummary } from '../../types/models'
+import { API_BASE_URL } from '../../config'
 
 export interface Post {
   id: number
@@ -8,7 +9,7 @@ export interface Post {
 
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
   endpoints: builder => ({
     getPosts: builder.query<Post[], void>({
       query: () => '/posts',

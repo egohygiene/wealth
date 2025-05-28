@@ -33,4 +33,17 @@ Build for production:
 pnpm build
 ```
 
+### Configuration
+
+Runtime options are provided via environment variables. Set them in a `.env`
+file or pass them through your container runtime.
+
+- `VITE_API_BASE_URL` - base URL for the API service
+- `VITE_KEYCLOAK_URL` - Keycloak server URL
+- `VITE_KEYCLOAK_REALM` - authentication realm
+- `VITE_KEYCLOAK_CLIENT_ID` - Keycloak client id
+
+The Docker Compose setups load these variables from their respective `.env.*`
+files so the UI automatically points at the correct services.
+
 

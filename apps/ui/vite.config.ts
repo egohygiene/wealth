@@ -14,10 +14,10 @@ export default defineConfig({
     VitePWA(),
   ],
   server: {
-    port: 5173,
+    port: Number(process.env.UI_PORT) || 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: `http://localhost:${process.env.API_PORT || 8000}`,
         changeOrigin: true,
       },
     },

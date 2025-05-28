@@ -1,9 +1,9 @@
 import { Link, Route, Routes } from 'react-router-dom'
-import { useGetPostsQuery } from './features/api/apiSlice'
+import { useGetFinanceSummaryQuery } from './features/api/apiSlice'
 import Chart from './components/Chart'
 
 function Home() {
-  const { data, isLoading } = useGetPostsQuery()
+  const { data, isLoading } = useGetFinanceSummaryQuery()
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Home</h1>

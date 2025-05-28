@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import type { Finance, FinanceSummary } from '../../types/models'
 
 export interface Post {
   id: number
@@ -17,7 +18,36 @@ export const api = createApi({
         { id: 2, title: 'Second post' },
       ],
     }),
+    getFinance: builder.query<Finance, void>({
+      query: () => '/finance',
+      // stubbed data to illustrate typing
+      transformResponse: (): Finance => ({
+        user_id: 'demo',
+        allocations: [],
+        expenses: [],
+        income_streams: [],
+        debts: [],
+        investments: [],
+        portfolios: [],
+        services: [],
+        roles: [],
+        features: [],
+        lifecycle_phase: 'stabilizing',
+        risk_profile: 'balanced',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+    }),
+    getFinanceSummary: builder.query<FinanceSummary, void>({
+      query: () => '/finance/summary',
+      transformResponse: (): FinanceSummary => ({
+        net_worth: 0,
+        investment_count: 0,
+        debt_count: 0,
+        allocation_count: 0,
+      }),
+    }),
   }),
 })
 
-export const { useGetPostsQuery } = api
+export const { useGetPostsQuery, useGetFinanceQuery, useGetFinanceSummaryQuery } = api

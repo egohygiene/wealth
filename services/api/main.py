@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from .config import get_config
 from .database import engine, get_session
 from .migrations import run_migrations_async
+from .logging import setup_logging, log, catch_and_log_exceptions
+from .middleware import RequestContextMiddleware
 from .schemas import (
     MapStateCreate,
     MapStateRead,
@@ -17,9 +19,13 @@ from .schemas import (
     MessageRead,
 )
 
+setup_logging()
+
 app = FastAPI(title="Wealth API")
+app.add_middleware(RequestContextMiddleware)
 
 config = get_config()
+log.info("Application configuration loaded")
 
 # Configure Keycloak connection. Adjust URLs and secrets for your environment.
 keycloak = FastAPIKeycloak(
@@ -44,12 +50,15 @@ oauth.register(
 
 @app.on_event("startup")
 async def startup_event() -> None:
+    log.info("Startup initiated")
     await keycloak.load_config()
     await run_migrations_async()
+    log.info("Startup complete")
 
 
 @app.on_event("shutdown")
 async def shutdown_event() -> None:
+    log.info("Shutting down")
     await engine.dispose()
 
 
@@ -80,6 +89,7 @@ def read_current_user(user: OIDCUser = Depends(get_user)):
 
 
 @app.post("/messages", response_model=MessageRead)
+@catch_and_log_exceptions
 async def create_message(
     message_in: MessageCreate,
     session: AsyncSession = Depends(get_session),
@@ -95,6 +105,7 @@ async def create_message(
 
 
 @app.get("/messages", response_model=list[MessageRead])
+@catch_and_log_exceptions
 async def read_messages(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(get_user),
@@ -104,6 +115,7 @@ async def read_messages(
 
 
 @app.post("/message/generate", response_model=MessageRead)
+@catch_and_log_exceptions
 async def generate_message(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(get_user),
@@ -119,6 +131,7 @@ async def generate_message(
 
 
 @app.post("/map_states", response_model=MapStateRead)
+@catch_and_log_exceptions
 async def create_map_state(
     map_state_in: MapStateCreate,
     session: AsyncSession = Depends(get_session),
@@ -134,6 +147,7 @@ async def create_map_state(
 
 
 @app.get("/map_states", response_model=list[MapStateRead])
+@catch_and_log_exceptions
 async def read_map_states(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(get_user),

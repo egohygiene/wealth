@@ -1,6 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+import structlog
+
+log = structlog.get_logger(__name__)
 
 from .models import User, Message, MapState
 

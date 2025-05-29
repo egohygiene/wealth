@@ -1,6 +1,9 @@
 from fastapi import HTTPException, Request
 from pydantic import BaseModel
 from fastapi_keycloak import OIDCUser as KeycloakOIDCUser
+import structlog
+
+log = structlog.get_logger(__name__)
 
 class OIDCUser(BaseModel):
     """Subset of common OpenID Connect claims."""

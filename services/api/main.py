@@ -4,6 +4,7 @@ from authlib.integrations.starlette_client import OAuth
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from datetime import datetime, timezone
 
 from .config import get_config
 from .database import engine, get_session
@@ -112,6 +113,29 @@ async def read_messages(
         select(Message).options(selectinload(Message.user))
     )
     return result.scalars().all()
+
+
+@app.post("/message/generate", response_model=MessageRead)
+async def generate_message(
+    session: AsyncSession = Depends(get_session),
+    user: OIDCUser = Depends(keycloak.get_current_user()),
+):
+    db_user = await session.get(User, user.sub)
+    if not db_user:
+        db_user = User(
+            id=user.sub,
+            preferred_username=user.preferred_username,
+            email=user.email,
+        )
+        session.add(db_user)
+        await session.flush()
+
+    generated_text = f"Auto-generated at {datetime.now(timezone.utc).isoformat()}!"
+    message = Message(message=generated_text, user=db_user)
+    session.add(message)
+    await session.commit()
+    await session.refresh(message)
+    return message
 
 
 @app.post("/map_states", response_model=MapStateRead)

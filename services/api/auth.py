@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Request
 from pydantic import BaseModel
-from fastapi_keycloak import OIDCUser as KeycloakOIDCUser
 import structlog
+from typing import Any, Dict
 
 log = structlog.get_logger(__name__)
 
@@ -24,14 +24,8 @@ def get_user(request: Request) -> OIDCUser:
     return OIDCUser.model_validate(user_claims)
 
 
-def map_user(user: KeycloakOIDCUser) -> dict:
-    """Map FastAPI-Keycloak user to a plain dictionary for request state."""
-    oidc_user = OIDCUser(
-        sub=user.sub,
-        preferred_username=getattr(user, "preferred_username", None),
-        email=getattr(user, "email", None),
-        given_name=getattr(user, "given_name", None),
-        family_name=getattr(user, "family_name", None),
-        name=getattr(user, "name", None),
-    )
-    return oidc_user.model_dump()
+async def map_user(userinfo: Dict[str, Any]) -> OIDCUser:
+    """Convert raw userinfo dictionary to an ``OIDCUser`` instance."""
+    if not isinstance(userinfo, dict):
+        raise TypeError("userinfo must be a dictionary")
+    return OIDCUser.model_validate(userinfo)

@@ -1,15 +1,15 @@
 from fastapi import Depends, FastAPI, Request
-from fastapi_keycloak import FastAPIKeycloak, OIDCUser
+from fastapi_keycloak import FastAPIKeycloak
+
+from .auth import OIDCUser, get_user
+from .dao import MapStateDAO, MessageDAO, UserDAO
 from authlib.integrations.starlette_client import OAuth
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 
 from .config import get_config
 from .database import engine, get_session
 from .migrations import run_migrations_async
-from .models import MapState, Message, User
 from .schemas import (
     MapStateCreate,
     MapStateRead,
@@ -74,99 +74,69 @@ async def google_callback(request: Request):
 
 
 @app.get("/me")
-def read_current_user(user: OIDCUser = Depends(keycloak.get_current_user())):
-    return {
-        "username": user.preferred_username,
-        "email": user.email,
-    }
+def read_current_user(user: OIDCUser = Depends(get_user)):
+    """Return all available claims for the current user."""
+    return user.model_dump()
 
 
 @app.post("/messages", response_model=MessageRead)
 async def create_message(
     message_in: MessageCreate,
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(keycloak.get_current_user()),
+    user: OIDCUser = Depends(get_user),
 ):
-    db_user = await session.get(User, user.sub)
-    if not db_user:
-        db_user = User(
-            id=user.sub,
-            preferred_username=user.preferred_username,
-            email=user.email,
-        )
-        session.add(db_user)
-        await session.flush()
+    user_dao = UserDAO(session)
+    db_user = await user_dao.get_or_create(
+        user.sub, user.preferred_username, user.email
+    )
 
-    message = Message(message=message_in.message, user=db_user)
-    session.add(message)
-    await session.commit()
-    await session.refresh(message)
-    return message
+    message_dao = MessageDAO(session)
+    return await message_dao.create(db_user, message_in.message)
 
 
 @app.get("/messages", response_model=list[MessageRead])
 async def read_messages(
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(keycloak.get_current_user()),
+    user: OIDCUser = Depends(get_user),
 ):
-    result = await session.execute(
-        select(Message).options(selectinload(Message.user))
-    )
-    return result.scalars().all()
+    dao = MessageDAO(session)
+    return await dao.list_all()
 
 
 @app.post("/message/generate", response_model=MessageRead)
 async def generate_message(
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(keycloak.get_current_user()),
+    user: OIDCUser = Depends(get_user),
 ):
-    db_user = await session.get(User, user.sub)
-    if not db_user:
-        db_user = User(
-            id=user.sub,
-            preferred_username=user.preferred_username,
-            email=user.email,
-        )
-        session.add(db_user)
-        await session.flush()
+    user_dao = UserDAO(session)
+    db_user = await user_dao.get_or_create(
+        user.sub, user.preferred_username, user.email
+    )
 
+    message_dao = MessageDAO(session)
     generated_text = f"Auto-generated at {datetime.now(timezone.utc).isoformat()}!"
-    message = Message(message=generated_text, user=db_user)
-    session.add(message)
-    await session.commit()
-    await session.refresh(message)
-    return message
+    return await message_dao.create(db_user, generated_text)
 
 
 @app.post("/map_states", response_model=MapStateRead)
 async def create_map_state(
     map_state_in: MapStateCreate,
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(keycloak.get_current_user()),
+    user: OIDCUser = Depends(get_user),
 ):
-    db_user = await session.get(User, user.sub)
-    if not db_user:
-        db_user = User(
-            id=user.sub,
-            preferred_username=user.preferred_username,
-            email=user.email,
-        )
-        session.add(db_user)
-        await session.flush()
+    user_dao = UserDAO(session)
+    db_user = await user_dao.get_or_create(
+        user.sub, user.preferred_username, user.email
+    )
 
-    map_state = MapState(state=map_state_in.state, user=db_user)
-    session.add(map_state)
-    await session.commit()
-    await session.refresh(map_state)
-    return map_state
+    dao = MapStateDAO(session)
+    return await dao.create(db_user, map_state_in.state)
 
 
 @app.get("/map_states", response_model=list[MapStateRead])
 async def read_map_states(
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(keycloak.get_current_user()),
+    user: OIDCUser = Depends(get_user),
 ):
-    result = await session.execute(
-        select(MapState).options(selectinload(MapState.user))
-    )
-    return result.scalars().all()
+    dao = MapStateDAO(session)
+    return await dao.list_all()

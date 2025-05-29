@@ -32,4 +32,3 @@ def map_user(user: KeycloakOIDCUser) -> dict:
         name=getattr(user, "name", None),
     )
     return oidc_user.model_dump()
-

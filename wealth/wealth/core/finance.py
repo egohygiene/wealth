@@ -8,9 +8,20 @@ from typing import List, Optional
 from wealth.core.utils import format_currency
 
 from wealth.models import (
-    Allocation, Expense, Income, Debt, Investment, LifecyclePhase,
-    Portfolio, RiskProfile, Service, Frequency
+    Allocation,
+    Expense,
+    Income,
+    Debt,
+    Investment,
+    LifecyclePhase,
+    Portfolio,
+    RiskProfile,
+    Service,
+    Frequency,
 )
+import structlog
+
+log = structlog.get_logger(__name__)
 
 class FinanceSummary(BaseModel):
     net_worth: float
@@ -111,7 +122,7 @@ class Finance(BaseModel):
 
         breakdown = self.get_allocation_breakdown()
         if not breakdown:
-            print("No allocation data to display.")
+            log.info("No allocation data to display")
             return
 
         # 💡 Frequency conversion via enum method
@@ -149,7 +160,7 @@ class Finance(BaseModel):
             output_path: Path = Path(save_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             fig.write_image(output_path)
-            print(f"✅ Plotly chart saved to {output_path}")
+            log.info("Plotly chart saved", path=str(output_path))
 
         if show:
             fig.show()

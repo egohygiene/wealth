@@ -2,6 +2,9 @@ from uuid import uuid4
 
 from wealth.core.finance import Finance
 from wealth.data.allocations import create_default_allocations
+from services.api.logging import setup_logging, log
+
+setup_logging()
 
 # 1. Create your user and Finance system
 user_id = str(uuid4())
@@ -16,6 +19,6 @@ allocations = create_default_allocations(finance=finance)
 finance.add_allocations(allocations)
 
 # 4. Output the result
-print(finance.to_json(indent=2))
+log.info(finance.to_json(indent=2))
 
 finance.plot_allocation_chart(show=True, save_path="output/allocation_chart.png")

@@ -2,6 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 
 from .config import get_config
 from .models import Base
+import structlog
+
+log = structlog.get_logger(__name__)
 
 
 def get_database_url() -> str:

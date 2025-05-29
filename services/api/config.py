@@ -31,6 +31,11 @@ class Config(BaseSettings):
         "http://localhost:8000/callback", env="KEYCLOAK_REDIRECT_URI"
     )
 
+    # Logging configuration
+    LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
+    LOG_JSON: bool = Field(False, env="LOG_JSON")
+    LOG_FILE: str = Field("logs/app.log", env="LOG_FILE")
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

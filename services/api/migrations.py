@@ -3,6 +3,9 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+import structlog
+
+log = structlog.get_logger(__name__)
 
 from .database import get_database_url
 

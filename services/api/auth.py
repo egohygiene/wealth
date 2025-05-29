@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Request
 from pydantic import BaseModel
+from fastapi_keycloak import OIDCUser as KeycloakOIDCUser
 
 class OIDCUser(BaseModel):
     """Subset of common OpenID Connect claims."""
@@ -18,3 +19,17 @@ def get_user(request: Request) -> OIDCUser:
     if not isinstance(user_claims, dict):
         raise HTTPException(status_code=401, detail="User not authenticated")
     return OIDCUser.model_validate(user_claims)
+
+
+def map_user(user: KeycloakOIDCUser) -> dict:
+    """Map FastAPI-Keycloak user to a plain dictionary for request state."""
+    oidc_user = OIDCUser(
+        sub=user.sub,
+        preferred_username=getattr(user, "preferred_username", None),
+        email=getattr(user, "email", None),
+        given_name=getattr(user, "given_name", None),
+        family_name=getattr(user, "family_name", None),
+        name=getattr(user, "name", None),
+    )
+    return oidc_user.model_dump()
+

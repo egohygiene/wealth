@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi_keycloak import FastAPIKeycloak
 
-from .auth import OIDCUser, get_user
+from .auth import OIDCUser, get_user, map_user
 from .dao import MapStateDAO, MessageDAO, UserDAO
 from authlib.integrations.starlette_client import OAuth
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -83,7 +83,7 @@ async def google_callback(request: Request):
 
 
 @app.get("/me")
-def read_current_user(user: OIDCUser = Depends(get_user)):
+def read_current_user(user: OIDCUser = Depends(map_user)):
     """Return all available claims for the current user."""
     return user.model_dump()
 
@@ -93,7 +93,7 @@ def read_current_user(user: OIDCUser = Depends(get_user)):
 async def create_message(
     message_in: MessageCreate,
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(get_user),
+    user: OIDCUser = Depends(map_user),
 ):
     user_dao = UserDAO(session)
     db_user = await user_dao.get_or_create(
@@ -108,7 +108,7 @@ async def create_message(
 @catch_and_log_exceptions
 async def read_messages(
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(get_user),
+    user: OIDCUser = Depends(map_user),
 ):
     dao = MessageDAO(session)
     return await dao.list_all()
@@ -118,7 +118,7 @@ async def read_messages(
 @catch_and_log_exceptions
 async def generate_message(
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(get_user),
+    user: OIDCUser = Depends(map_user),
 ):
     user_dao = UserDAO(session)
     db_user = await user_dao.get_or_create(
@@ -135,7 +135,7 @@ async def generate_message(
 async def create_map_state(
     map_state_in: MapStateCreate,
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(get_user),
+    user: OIDCUser = Depends(map_user),
 ):
     user_dao = UserDAO(session)
     db_user = await user_dao.get_or_create(
@@ -150,7 +150,7 @@ async def create_map_state(
 @catch_and_log_exceptions
 async def read_map_states(
     session: AsyncSession = Depends(get_session),
-    user: OIDCUser = Depends(get_user),
+    user: OIDCUser = Depends(map_user),
 ):
     dao = MapStateDAO(session)
     return await dao.list_all()

@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import { useGetFinanceSummaryQuery } from './features/api/apiSlice'
 import Chart from './components/Chart'
 import AuthStatus from './components/AuthStatus'
+import Messages from './components/Messages'
 
 function Home() {
   const { data, isLoading, isError, error } = useGetFinanceSummaryQuery()
@@ -19,6 +20,7 @@ function Home() {
         <pre>{JSON.stringify(data, null, 2)}</pre>
       )}
       <Chart />
+      <Messages />
     </div>
   )
 }

@@ -1,19 +1,19 @@
-import { useKeycloak } from '@react-keycloak/web'
+import { useAuth } from 'react-oidc-context'
 
 export default function AuthStatus() {
-  const { keycloak } = useKeycloak()
+  const auth = useAuth()
 
-  if (keycloak.authenticated) {
-    const roles = (keycloak.tokenParsed as any)?.realm_access?.roles || []
+  if (auth.isAuthenticated && auth.user) {
+    const roles = (auth.user.profile as any)?.realm_access?.roles || []
     return (
       <div className="flex gap-2 items-center">
         <span className="font-semibold">
-          {keycloak.tokenParsed?.preferred_username}
+          {auth.user.profile?.preferred_username}
         </span>
         {roles.length > 0 && <span>Roles: {roles.join(', ')}</span>}
         <button
           className="px-2 py-1 bg-gray-200 rounded"
-          onClick={() => keycloak.logout()}
+          onClick={() => auth.signoutRedirect()}
         >
           Logout
         </button>
@@ -24,7 +24,7 @@ export default function AuthStatus() {
   return (
     <button
       className="px-2 py-1 bg-gray-200 rounded"
-      onClick={() => keycloak.login()}
+      onClick={() => auth.signinRedirect()}
     >
       Login
     </button>

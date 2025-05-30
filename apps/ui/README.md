@@ -5,7 +5,7 @@ This is a React application bootstrapped with Vite and TypeScript. It uses pnpm 
 - React Router
 - Tailwind CSS
 - Redux Toolkit with RTK Query
-- Keycloak and Google authentication stubs
+- Authentication via react-oidc-context (Keycloak compatible)
 - Unovis for charting
 - Vite dev server proxy to the FastAPI backend
 - Path aliases via `vite-tsconfig-paths`
@@ -42,6 +42,7 @@ file or pass them through your container runtime.
 - `VITE_KEYCLOAK_URL` - Keycloak server URL
 - `VITE_KEYCLOAK_REALM` - authentication realm
 - `VITE_KEYCLOAK_CLIENT_ID` - Keycloak client id
+- `VITE_OIDC_REDIRECT_URI` - optional override for login callback
 
 The Docker Compose setups load these variables from their respective `.env.*`
 files so the UI automatically points at the correct services.

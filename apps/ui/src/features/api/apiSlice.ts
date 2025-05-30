@@ -1,15 +1,34 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { Finance, FinanceSummary } from '../../types/models'
-import { API_BASE_URL } from '../../config'
+import type { Message } from '../../types/message'
+import { API_BASE_URL, OIDC_AUTHORITY, OIDC_CLIENT_ID } from '../../config'
 
 export interface Post {
   id: number
   title: string
 }
 
+const storageKey = `oidc.user:${OIDC_AUTHORITY}:${OIDC_CLIENT_ID}`
+
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: API_BASE_URL,
+    prepareHeaders: headers => {
+      const stored = localStorage.getItem(storageKey)
+      if (stored) {
+        try {
+          const user = JSON.parse(stored)
+          if (user?.access_token) {
+            headers.set('Authorization', `Bearer ${user.access_token}`)
+          }
+        } catch {
+          // ignore parse errors
+        }
+      }
+      return headers
+    },
+  }),
   endpoints: builder => ({
     getPosts: builder.query<Post[], void>({
       query: () => '/posts',
@@ -48,7 +67,23 @@ export const api = createApi({
         allocation_count: 0,
       }),
     }),
+    getMessages: builder.query<Message[], void>({
+      query: () => '/messages',
+    }),
+    createMessage: builder.mutation<Message, string>({
+      query: message => ({
+        url: '/messages',
+        method: 'POST',
+        body: { message },
+      }),
+    }),
   }),
 })
 
-export const { useGetPostsQuery, useGetFinanceQuery, useGetFinanceSummaryQuery } = api
+export const {
+  useGetPostsQuery,
+  useGetFinanceQuery,
+  useGetFinanceSummaryQuery,
+  useGetMessagesQuery,
+  useCreateMessageMutation,
+} = api

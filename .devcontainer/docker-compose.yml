@@ -15,7 +15,7 @@ services:
     container_name: registry
     hostname: registry
     ports:
-      - "5050:5000" # Host:5050 → Container:5000
+      - "5050:5000"
     networks:
       - devnet
 
@@ -26,11 +26,6 @@ services:
     volumes:
       - ..:/workspace:cached
     command: sleep infinity
-    environment:
-      - HTTP_PROXY=http://squid:3128
-      - HTTPS_PROXY=http://squid:3128
-      - NO_PROXY=localhost,127.0.0.1
-      - DOCKER_DNS=8.8.8.8
     depends_on:
       - squid
       - registry

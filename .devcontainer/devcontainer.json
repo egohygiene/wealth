@@ -21,6 +21,14 @@
       "installDockerComposeSwitch": true,
       "disableIp6tables": false
       // "dockerDefaultAddressPool": ""
+    },
+    "ghcr.io/devcontainers/features/nix:1": {
+      "version": "latest",
+      "multiUser": true,
+      "packages": "",
+      "useAttributePath": true,
+      "flakeUri": "",
+      "extraNixConfig": ""
     }
   },
   "postCreateCommand": "python3 /workspace/.devcontainer/post_create.py",

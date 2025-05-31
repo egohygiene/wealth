@@ -1,5 +1,5 @@
 {
-  "name": "Wealth Dev Container",
+  "name": "Dev Container",
   "dockerComposeFile": [
     "docker-compose.yml"
   ],

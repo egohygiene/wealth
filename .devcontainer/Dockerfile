@@ -12,6 +12,7 @@ ARG TMPDIR=/tmp
 ARG LANG=en_US.UTF-8
 ARG LANGUAGE=en_US:en
 ARG TZ=UTC
+ARG LC_ALL=en_US.UTF-8
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -25,7 +26,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=${LANG} \
     LANGUAGE=${LANGUAGE} \
     TZ=${TZ} \
-    LC_ALL=${LANG} \
+    LC_ALL=${LC_ALL} \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
     PYTHONHASHSEED=random \
@@ -91,8 +92,27 @@ RUN apt-get update -qq && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /var/tmp/* /tmp/*
 
+RUN apt-get update -qq && apt-get install --no-install-recommends --yes \
+    locales \
+    tzdata \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /var/tmp/* /tmp/*
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8
+
+RUN sed -i 's/^SYS_UID_MAX.*/SYS_UID_MAX 99999/' /etc/login.defs
+
+RUN mkdir -p /devtools
+
 # Set working directory
 WORKDIR /workspace
 
 # Copy the proxy setup script
 COPY .devcontainer/post_create.py /workspace/.devcontainer/post_create.py
+
+ENV NIX_CONF_DIR=/devtools/nix
+
+# Copy the Nix configuration file
+COPY --chown=vscode:vscode .devcontainer/nix/nix.conf ${NIX_CONF_DIR}/nix.conf

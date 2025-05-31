@@ -1,20 +1,30 @@
 {
-  description = "Wealth development shell";
+  description = "development shell";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-
-  outputs = { self, nixpkgs }: let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
-  in {
-    devShells.${system}.default = pkgs.mkShell {
-      packages = [
-        pkgs.nodejs_20
-        pkgs.pnpm
-        pkgs.python312Full
-        pkgs.poetry
-        pkgs.git
-      ];
-    };
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    flake-utils.url = "github:numtide/flake-utils";
   };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+        };
+      in {
+        devShells.default = pkgs.mkShell {
+          buildInputs = [
+            pkgs.nodejs_20
+            pkgs.pnpm
+            pkgs.python312Full
+            pkgs.poetry
+            pkgs.git
+          ];
+
+          shellHook = ''
+            echo "✅ dev shell ready (Node, Python, Poetry, PNPM)"
+          '';
+        };
+      });
 }

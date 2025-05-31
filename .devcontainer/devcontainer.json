@@ -1,14 +1,57 @@
 {
-    "name": "Wealth Dev Container",
-    "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker:1": {}
-    },
-    "postCreateCommand": "/bin/bash .devcontainer/post-create.sh && pnpm install && task lint:fix",
-    "mounts": [
-        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
-        "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
-    ],
-    "containerEnv": {
-        "DOCKER_DNS": "8.8.8.8"
+  "name": "Wealth Dev Container",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "dev",
+  "runServices": [
+    "squid",
+    "dev",
+    "registry"
+  ],
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2.12.2": {
+      "version": "latest",
+      "moby": true,
+      "mobyBuildxVersion": "latest",
+      "dockerDashComposeVersion": "latest",
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "installDockerComposeSwitch": true,
+      "disableIp6tables": false
+      // "dockerDefaultAddressPool": ""
     }
+  },
+  "postCreateCommand": "python3 /workspace/.devcontainer/post_create.py",
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "HTTP_PROXY": "http://squid:3128",
+    "HTTPS_PROXY": "http://squid:3128",
+    "NO_PROXY": "localhost,127.0.0.1",
+    "DOCKER_DNS": "8.8.8.8",
+    "INSECURE_REGISTRIES": "registry:5000"
+  },
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.autopep8",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "tamasfe.even-better-toml",
+        "ms-ossdata.vscode-pgsql"
+      ]
+    }
+  }
 }

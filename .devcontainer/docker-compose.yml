@@ -1,0 +1,44 @@
+services:
+  squid:
+    image: ubuntu/squid@sha256:98f98aaa024e4a58433450f8adde48ef5748f1ae05133b2367d64317cc881a3a
+    container_name: squid
+    hostname: squid
+    ports:
+      - "3128:3128"
+    networks:
+      - devnet
+    volumes:
+      - ./squid.conf:/etc/squid/squid.conf:ro
+
+  registry:
+    image: registry@sha256:1fc7de654f2ac1247f0b67e8a459e273b0993be7d2beda1f3f56fbf1001ed3e7
+    container_name: registry
+    hostname: registry
+    ports:
+      - "5050:5000" # Host:5050 → Container:5000
+    networks:
+      - devnet
+
+  dev:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      - HTTP_PROXY=http://squid:3128
+      - HTTPS_PROXY=http://squid:3128
+      - NO_PROXY=localhost,127.0.0.1
+      - DOCKER_DNS=8.8.8.8
+    depends_on:
+      - squid
+      - registry
+    privileged: true
+    user: vscode
+    networks:
+      - devnet
+
+networks:
+  devnet:
+    driver: bridge

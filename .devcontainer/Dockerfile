@@ -98,11 +98,16 @@ RUN apt-get update -qq && apt-get install --no-install-recommends --yes \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /var/tmp/* /tmp/*
 
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
+    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
     && locale-gen en_US.UTF-8 \
-    && update-locale LANG=en_US.UTF-8
+    && update-locale LANG=en_US.UTF-8 \
+    && dpkg-reconfigure locales
 
-RUN sed -i 's/^SYS_UID_MAX.*/SYS_UID_MAX 99999/' /etc/login.defs
+# Ensure SYS_UID_MAX and SYS_GID_MAX are set to high values, uncommented or inserted
+RUN sed -i '/^#\?SYS_UID_MAX/ d' /etc/login.defs && echo 'SYS_UID_MAX 99999' >> /etc/login.defs && \
+    sed -i '/^#\?SYS_GID_MAX/ d' /etc/login.defs && echo 'SYS_GID_MAX 99999' >> /etc/login.defs
 
 RUN mkdir -p /devtools
 

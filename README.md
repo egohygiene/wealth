@@ -103,3 +103,16 @@ To automatically fix problems run:
 task lint:fix
 ```
 
+## Nix development environment
+
+The repository includes a small `flake.nix` describing the tooling used in
+development. If you have [Nix](https://nixos.org/) installed you can enter a
+shell with all required packages using:
+
+```bash
+nix develop
+```
+
+The dev container is configured to install Nix and use this flake, providing a
+consistent setup across machines.
+

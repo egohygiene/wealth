@@ -491,6 +491,36 @@ os::architecture() {
 }
 
 # -----------------------------------------------------------------------------
+# Function: os::kernel
+#
+# Description:
+#   Returns the kernel release string (e.g., the output of `uname -r`).
+# -----------------------------------------------------------------------------
+os::kernel() {
+  uname -r 2>/dev/null || true
+}
+
+# -----------------------------------------------------------------------------
+# Function: os::distro
+#
+# Description:
+#   Returns the distribution ID from /etc/os-release if available.
+# -----------------------------------------------------------------------------
+os::distro() {
+  [[ -f /etc/os-release ]] && grep '^ID=' /etc/os-release | cut -d= -f2 | tr -d '"'
+}
+
+# -----------------------------------------------------------------------------
+# Function: os::version
+#
+# Description:
+#   Returns the distribution version from /etc/os-release if available.
+# -----------------------------------------------------------------------------
+os::version() {
+  [[ -f /etc/os-release ]] && grep '^VERSION_ID=' /etc/os-release | cut -d= -f2 | tr -d '"'
+}
+
+# -----------------------------------------------------------------------------
 # Function: os::detect
 #
 # Description:
@@ -514,7 +544,11 @@ os::architecture() {
 os::detect() {
   OS="$(os::operating_system)"
   ARCH="$(os::architecture)" || exit 1
-  log "🖥️  OS: ${OS}, Arch: ${ARCH}"
+  OS_KERNEL="$(os::kernel)"
+  OS_DISTRO="$(os::distro)"
+  OS_VERSION="$(os::version)"
+  OS_ID_LIKE="$(os::id_like)"
+  log "🖥️  OS: ${OS} ${OS_DISTRO}-${OS_VERSION} (${ARCH}), Kernel: ${OS_KERNEL}"
 }
 
 # -----------------------------------------------------------------------------
@@ -861,10 +895,35 @@ bash::print_info() {
   done < <(bash::options)
 }
 
+# -----------------------------------------------------------------------------
+# Function: script::detect
+#
+# Description:
+#   Detects information about the running script and stores it in globals.
+# -----------------------------------------------------------------------------
+script::detect() {
+  SCRIPT_SHELL="${SHELL:-$(command -v bash)}"
+  SCRIPT_PID="$$"
+  ORIGINAL_CWD="$(pwd)"
+  SCRIPT_PARAMS="$*"
+  SCRIPT_PATH="${BASH_SOURCE[0]}"
+  SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+  SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
+
+  log::debug "Original CWD     : $ORIGINAL_CWD"
+  log::debug "Script parameters: $SCRIPT_PARAMS"
+  log::debug "Script path      : $SCRIPT_PATH"
+  log::debug "Script directory : $SCRIPT_DIR"
+  log::debug "Script name      : $SCRIPT_NAME"
+  log::debug "Shell path       : $SCRIPT_SHELL"
+  log::debug "Current shell PID: $SCRIPT_PID"
+}
+
 init() {
   trap::setup
 
   os::detect
+  script::detect "$@"
 }
 
 main() {

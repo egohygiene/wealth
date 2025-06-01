@@ -54,7 +54,11 @@
         "ms-azuretools.vscode-docker",
         "tamasfe.even-better-toml",
         "ms-ossdata.vscode-pgsql",
-        "bbenoist.Nix"
+        "bbenoist.Nix",
+        "redhat.ansible",
+        "mrmlnc.vscode-apache",
+        "EditorConfig.EditorConfig",
+        "christian-kohler.npm-intellisense"
       ]
     }
   }

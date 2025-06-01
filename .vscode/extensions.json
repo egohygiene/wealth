@@ -2,6 +2,9 @@
     "recommendations": [
         "tamasfe.even-better-toml",
         "ms-ossdata.vscode-pgsql",
-        "bbenoist.nix"
+        "bbenoist.nix",
+        "redhat.ansible",
+        "mrmlnc.vscode-apache",
+        "editorconfig.editorconfig"
     ]
 }

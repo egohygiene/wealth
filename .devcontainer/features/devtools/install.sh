@@ -1051,12 +1051,41 @@ taskfile::version() {
     echo "${taskfile_version}"
 }
 
+taskfile::home() {
+    echo "${TASKFILE_HOME_DIR:-/usr/local/bin}"
+}
+
+taskfile::verify() {
+    local binary_path="$(taskfile::home)/task"
+    if [[ -x "$binary_path" ]]; then
+        local version
+        version="$("$binary_path" --version 2>/dev/null || "$binary_path" -v 2>/dev/null || echo "Version info not available")"
+        log::success "✅ Taskfile installed at $binary_path: $version"
+    else
+        log::error "❌ Taskfile not found at $binary_path"
+        return 1
+    fi
+}
+
 install::asdf() {
     log "📥 Installing ASDF version manager '$(asdf::version)'..."
 }
 
 install::taskfile() {
-    log "📥 Installing Taskfile '$(taskfile::version)'..."
+    local home_dir
+    home_dir="$(taskfile::home)"
+    local binary_path="${home_dir}/task"
+
+    if [[ -x "$binary_path" ]]; then
+        log::success "✅ Taskfile already installed at $binary_path"
+        return
+    fi
+
+    log "📥 Installing Taskfile '$(taskfile::version)' to $home_dir..."
+    mkdir -p "$home_dir"
+    curl --fail --silent --show-error https://taskfile.dev/install.sh | sh -s -- -d -b "$home_dir"
+
+    taskfile::verify
 }
 
 install() {

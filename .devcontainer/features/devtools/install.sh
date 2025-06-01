@@ -114,13 +114,13 @@ trap::on_interrupt() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: trap::setup
+# Function: trap::init
 #
 # Description:
 #   Installs standard traps for error handling, interrupt signals, and clean exit.
 #
 # Usage:
-#   trap::setup
+#   trap::init
 #
 # Arguments:
 #   None
@@ -128,7 +128,7 @@ trap::on_interrupt() {
 # Returns:
 #   Registers traps globally for ERR, EXIT, and INT.
 # -----------------------------------------------------------------------------
-trap::setup() {
+trap::init() {
   trap 'trap::on_error $LINENO' ERR
   trap trap::on_exit EXIT
   trap trap::on_interrupt INT
@@ -722,14 +722,14 @@ os::print_info() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: os::setup
+# Function: os::init
 #
 # Description:
 #   Detects the host operating system and architecture, sets global OS and ARCH
 #   variables, and logs the result.
 #
 # Usage:
-#   os::setup
+#   os::init
 #
 # Arguments:
 #   None
@@ -739,10 +739,10 @@ os::print_info() {
 #   Exits with error if the architecture is unsupported.
 #
 # Example:
-#   os::setup
+#   os::init
 #   echo "Detected: $OS / $ARCH"
 # -----------------------------------------------------------------------------
-os::setup() {
+os::init() {
     OS="$(os::operating_system)"
     log "🖥️  Detected OS: ${OS}"
 
@@ -967,12 +967,12 @@ script::path() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: script::info
+# Function: script::init
 #
 # Description:
 #   Detects information about the running script and stores it in globals.
 # -----------------------------------------------------------------------------
-script::info() {
+script::init() {
   SCRIPT_SHELL="${SHELL:-$(command -v bash)}"
   SCRIPT_PID="$$"
   ORIGINAL_CWD="$(pwd)"
@@ -981,26 +981,47 @@ script::info() {
   SCRIPT_PATH="${SCRIPT_DIR}/$(basename "$0")"
   SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
 
-  log::debug "Original CWD     : $ORIGINAL_CWD"
+  log::debug "Original CWD: $ORIGINAL_CWD"
   log::debug "Script parameters: $SCRIPT_PARAMS"
-  log::debug "Script path      : $SCRIPT_PATH"
-  log::debug "Script directory : $SCRIPT_DIR"
-  log::debug "Script name      : $SCRIPT_NAME"
-  log::debug "Shell path       : $SCRIPT_SHELL"
+  log::debug "Script path: $SCRIPT_PATH"
+  log::debug "Script directory: $SCRIPT_DIR"
+  log::debug "Script name: $SCRIPT_NAME"
+  log::debug "Shell path: $SCRIPT_SHELL"
   log::debug "Current shell PID: $SCRIPT_PID"
 }
 
+logger::logs_dir() {
+    echo "${DEVTOOLS_LOGS:-./logs}"
+}
+
+logger::init() {
+    local logs_dir
+    logs_dir="$(logger::logs_dir)"
+    if [[ ! -d "$logs_dir" ]]; then
+        mkdir -p "$logs_dir" || {
+            log "❌ Failed to create logs directory: $logs_dir" >&2
+            exit 1
+        }
+        log "✅ Logs directory created: $logs_dir"
+    else
+        log "ℹ️  Logs directory already exists: $logs_dir"
+    fi
+
+    local timestamp
+    timestamp=$(date::now)
+    LOG_FILE="$(cd "$logs_dir" && pwd)/devtools-${timestamp}.log"
+    log "📁 Logs will be written to $LOG_FILE"
+}
+
 init() {
-  trap::setup
-  os::setup
-#   script::info "$@"
+  trap::init
+  logger::init
+  os::init
+  script::init "$@"
 }
 
 main() {
     init "$@"
-
-    # Set up logging file if needed
-    # LOG_FILE="${LOG_FILE:-/dev/null}"
 
     # log "   • Version         : $(bash::version)"
     # log "   • Major Version   : $(bash::major_version)"

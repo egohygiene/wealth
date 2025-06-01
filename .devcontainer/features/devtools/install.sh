@@ -79,6 +79,9 @@ color::underline() {
 #
 # Usage:
 #   printf "%sRed text%s\n" "$(color::red)" "$(color::reset)"
+#
+# Returns:
+#   ANSI escape sequence for red text in bold.
 # -----------------------------------------------------------------------------
 color::red() {
   printf '\033[1;31m'
@@ -92,6 +95,9 @@ color::red() {
 #
 # Usage:
 #   printf "%sGreen text%s\n" "$(color::green)" "$(color::reset)"
+#
+# Returns:
+#   ANSI escape sequence for green text in bold.
 # -----------------------------------------------------------------------------
 color::green() {
   printf '\033[1;32m'
@@ -105,6 +111,9 @@ color::green() {
 #
 # Usage:
 #   printf "%sYellow text%s\n" "$(color::yellow)" "$(color::reset)"
+#
+# Returns:
+#   ANSI escape sequence for yellow text in bold.
 # -----------------------------------------------------------------------------
 color::yellow() {
   printf '\033[1;33m'
@@ -118,6 +127,9 @@ color::yellow() {
 #
 # Usage:
 #   printf "%sBlue text%s\n" "$(color::blue)" "$(color::reset)"
+#
+# Returns:
+#   ANSI escape sequence for blue text in bold.
 # -----------------------------------------------------------------------------
 color::blue() {
   printf '\033[1;34m'
@@ -131,22 +143,31 @@ color::blue() {
 #
 # Usage:
 #   printf "%sDebug text%s\n" "$(color::gray)" "$(color::reset)"
+#
+# Returns:
+#   ANSI escape sequence for dim gray text.
 # -----------------------------------------------------------------------------
 color::gray() {
   printf '\033[0;90m'
 }
 
 # -----------------------------------------------------------------------------
-# Function: color::reset
+# Function: terminal::is_term
 #
 # Description:
-#   Returns the ANSI escape code to reset all formatting.
+#   Determines if stdout is connected to a TTY.
 #
 # Usage:
-#   printf "%sNormal again%s\n" "$(color::red)" "$(color::reset)"
+#   if terminal::is_term; then echo "Terminal"; fi
+#
+# Arguments:
+#   None
+#
+# Returns:
+#   Exit code 0 if stdout is a terminal, non-zero otherwise.
 # -----------------------------------------------------------------------------
-color::reset() {
-  printf '\033[0m'
+terminal::is_term() {
+    [[ -t 1 || -z ${TERM} ]] && return 0 || return 1
 }
 
 # -----------------------------------------------------------------------------
@@ -257,7 +278,7 @@ log::__print() {
 # Description: Logs an informational message (blue).
 # -----------------------------------------------------------------------------
 log::info() {
-  log::__print "info" "$(log::emoji_for info)" blue "$*"
+  log::__print "info" "$(log::emoji_for info)" color::blue "$*"
 }
 
 # -----------------------------------------------------------------------------
@@ -265,7 +286,7 @@ log::info() {
 # Description: Logs a warning message (yellow).
 # -----------------------------------------------------------------------------
 log::warn() {
-  log::__print "warn" "$(log::emoji_for warn)" yellow "$*"
+  log::__print "warn" "$(log::emoji_for warn)" color::yellow "$*"
 }
 
 # -----------------------------------------------------------------------------
@@ -273,7 +294,7 @@ log::warn() {
 # Description: Logs an error message (red).
 # -----------------------------------------------------------------------------
 log::error() {
-  log::__print "error" "$(log::emoji_for error)" red "$*"
+  log::__print "error" "$(log::emoji_for error)" color::red "$*"
 }
 
 # -----------------------------------------------------------------------------
@@ -281,7 +302,7 @@ log::error() {
 # Description: Logs a success message (green).
 # -----------------------------------------------------------------------------
 log::success() {
-  log::__print "success" "$(log::emoji_for success)" green "$*"
+  log::__print "success" "$(log::emoji_for success)" color::green "$*"
 }
 
 # -----------------------------------------------------------------------------
@@ -289,7 +310,7 @@ log::success() {
 # Description: Logs a debug message (gray).
 # -----------------------------------------------------------------------------
 log::debug() {
-  log::__print "debug" "$(log::emoji_for debug)" gray "$*"
+  log::__print "debug" "$(log::emoji_for debug)" color::gray "$*"
 }
 
 # -----------------------------------------------------------------------------
@@ -764,11 +785,22 @@ bash::print_info() {
 
 
 
-
-terminal::is_term() {
-    [[ -t 1 || -z ${TERM} ]] && return 0 || return 1
-}
-
+# -----------------------------------------------------------------------------
+# Function: realpath
+#
+# Description:
+#   Resolves an absolute path. Uses the system realpath if available,
+#   otherwise falls back to a POSIX-compliant implementation.
+#
+# Usage:
+#   resolved=$(realpath ./relative/file)
+#
+# Arguments:
+#   $1 - Path to resolve.
+#
+# Returns:
+#   Prints the absolute path or exits non-zero on error.
+# -----------------------------------------------------------------------------
 realpath() {
     local path="$1"
     if command -v realpath >/dev/null 2>&1; then

@@ -489,7 +489,7 @@ ensure_python_build_deps() {
 }
 
 main() {
-    init
+    init "$@"
 
     if is_debian; then
         log "🧠 Detected Debian-based system"

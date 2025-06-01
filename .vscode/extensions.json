@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "tamasfe.even-better-toml",
-        "ms-ossdata.vscode-pgsql"
+        "ms-ossdata.vscode-pgsql",
+        "bbenoist.nix"
     ]
 }

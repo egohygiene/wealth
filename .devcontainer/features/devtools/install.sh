@@ -762,7 +762,7 @@ os::init() {
     log "🆔 ID_LIKE: ${OS_ID_LIKE:-unknown}"
 
     if ! os::is_supported; then
-        log "❌ Unsupported OS or architecture: ${OS} / ${ARCH}"
+        log::error "❌ Unsupported OS or architecture: ${OS} / ${ARCH}"
         exit 1
     fi
 
@@ -896,6 +896,26 @@ bash::options() {
   set -o | grep -E 'on$'
 }
 
+bash::require_version() {
+    local min_major=4
+    if [[ $# -gt 0 ]]; then
+        min_major="$1"
+    fi
+
+    local bash_major
+    bash_major=$(bash::major_version)
+
+    local bash_minor
+    bash_minor=$(bash::minor_version)
+
+    if ((bash_major < min_major)); then
+        log::error "❌ Bash version $bash_major.$bash_minor detected. Bash $min_major.0+ is required."
+        exit 1
+    else
+        log::success "✅ Bash version $bash_major.$bash_minor meets the minimum requirement of $min_major.0+."
+    fi
+}
+
 # -----------------------------------------------------------------------------
 # Function: bash::print_info
 #
@@ -939,6 +959,12 @@ bash::print_info() {
   while IFS= read -r line; do
     log "     - ${line}"
   done < <(bash::options)
+
+  if terminal::is_term; then
+      log "🖥️  Running in terminal"
+  else
+      log "🚫 Not running in terminal — some features may be limited"
+  fi
 }
 
 # -----------------------------------------------------------------------------
@@ -981,13 +1007,13 @@ script::init() {
   SCRIPT_PATH="${SCRIPT_DIR}/$(basename "$0")"
   SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
 
-  log::debug "Original CWD: $ORIGINAL_CWD"
-  log::debug "Script parameters: $SCRIPT_PARAMS"
-  log::debug "Script path: $SCRIPT_PATH"
-  log::debug "Script directory: $SCRIPT_DIR"
-  log::debug "Script name: $SCRIPT_NAME"
-  log::debug "Shell path: $SCRIPT_SHELL"
-  log::debug "Current shell PID: $SCRIPT_PID"
+  log "Original CWD: $ORIGINAL_CWD"
+  log "Script parameters: $SCRIPT_PARAMS"
+  log "Script path: $SCRIPT_PATH"
+  log "Script directory: $SCRIPT_DIR"
+  log "Script name: $SCRIPT_NAME"
+  log "Shell path: $SCRIPT_SHELL"
+  log "Current shell PID: $SCRIPT_PID"
 }
 
 logger::logs_dir() {
@@ -999,10 +1025,10 @@ logger::init() {
     logs_dir="$(logger::logs_dir)"
     if [[ ! -d "$logs_dir" ]]; then
         mkdir -p "$logs_dir" || {
-            log "❌ Failed to create logs directory: $logs_dir" >&2
+            log::error "❌ Failed to create logs directory: $logs_dir" >&2
             exit 1
         }
-        log "✅ Logs directory created: $logs_dir"
+        log::success "✅ Logs directory created: $logs_dir"
     else
         log "ℹ️  Logs directory already exists: $logs_dir"
     fi
@@ -1013,25 +1039,90 @@ logger::init() {
     log "📁 Logs will be written to $LOG_FILE"
 }
 
+asdf::version() {
+    local asdf_version
+    asdf_version="${ASDFVERSION:-"latest"}"
+    echo "${asdf_version}"
+}
+
+taskfile::version() {
+    local taskfile_version
+    taskfile_version="${TASKFILEVERSION:-"latest"}"
+    echo "${taskfile_version}"
+}
+
+install::asdf() {
+    log "📥 Installing ASDF version manager '$(asdf::version)'..."
+}
+
+install::taskfile() {
+    log "📥 Installing Taskfile '$(taskfile::version)'..."
+}
+
+install() {
+    log "🔧 Installing development tools..."
+    install::asdf
+    install::taskfile
+    log::success "🔧 Development tools installation complete."
+}
+
+# -----------------------------------------------------------------------------
+# Function: preflight::check
+#
+# Description:
+#   Performs required system checks before proceeding.
+#   Validates the presence of required CLI tools and compatible environment.
+#
+# Usage:
+#   preflight::check
+#
+# Returns:
+#   Exits if any checks fail. Otherwise returns 0.
+# -----------------------------------------------------------------------------
+preflight::check() {
+    log "🔧 Performing preflight checks..."
+
+    # Ensure we have the required Bash version
+    bash::require_version 3
+
+    local missing=()
+
+    local required_tools=(
+        git curl docker jq
+        uname grep cut tr date mkdir pwd
+        readlink dirname basename printf
+        command
+    )
+    for cmd in "${required_tools[@]}"; do
+        if ! cmd::exists "$cmd"; then
+            missing+=("$cmd")
+        fi
+    done
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log::error "❌ Missing required commands: ${missing[*]}" >&2
+        exit 1
+    else
+        log::success "✅ All required commands are available."
+    fi
+
+    log::success "✅ Preflight checks passed."
+}
+
 init() {
-  trap::init
-  logger::init
-  os::init
-  script::init "$@"
+    trap::init
+    logger::init
+    preflight::check
+    os::init
+    script::init "$@"
+    bash::print_info
+    log "🚀 Starting development environment setup..."
 }
 
 main() {
     init "$@"
-
-    # log "   • Version         : $(bash::version)"
-    # log "   • Major Version   : $(bash::major_version)"
-    # log "   • Minor Version   : $(bash::minor_version)"
-    # log "   • Path            : $(bash::path)"
-    # log::info "Starting setup..."
-    # log::warn "This might take a while"
-    # log::error "Something went wrong"
-    # log::success "All done!"
-    # log::debug "Path: $PATH"
+    install
+    log::success "🎉 Development environment setup complete!"
 }
 
 main "$@"

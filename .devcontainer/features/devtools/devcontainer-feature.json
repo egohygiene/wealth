@@ -48,6 +48,7 @@
                         "text": "This dev container includes an up-to-date version of Git, built from source as needed, pre-installed and available on the `PATH`."
                     }
                 ]
+                // "python.defaultInterpreterPath": "/usr/local/python/current/bin/python"
             }
         }
     },

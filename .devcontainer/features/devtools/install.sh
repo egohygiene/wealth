@@ -7,6 +7,25 @@ FEATURE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${FEATURE_DIR}"
 
 # -----------------------------------------------------------------------------
+# Function: cmd::exists
+#
+# Description:
+#   Checks if a command is available in the current environment's PATH.
+#
+# Usage:
+#   if cmd::exists curl; then ...
+#
+# Arguments:
+#   $1 - Command name to check.
+#
+# Returns:
+#   Exit code 0 if the command exists, non-zero otherwise.
+# -----------------------------------------------------------------------------
+cmd::exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# -----------------------------------------------------------------------------
 # Function: realpath
 #
 # Description:
@@ -24,7 +43,7 @@ cd "${FEATURE_DIR}"
 # -----------------------------------------------------------------------------
 realpath() {
     local path="$1"
-    if command -v realpath >/dev/null 2>&1; then
+    if cmd::exists realpath; then
         command realpath "$path"
     else
         # Fallback for POSIX systems (no symlink resolution)

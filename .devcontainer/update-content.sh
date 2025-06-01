@@ -1,36 +1,4 @@
 #!/usr/bin/env bash
-# ------------------------------------------------------------------------------
-# install-devtools.sh
-#
-# A universal installer for setting up ASDF + Taskfile dev environments.
-# Supports --local for .cache/ isolation and --fresh to clear cache before setup.
-#
-# Usage:
-#   ./install-devtools.sh
-#   ./install-devtools.sh --local
-#   ./install-devtools.sh --local --fresh
-# ------------------------------------------------------------------------------
-
-
-
-
-bash::info() {
-    local bash_bin
-    bash_bin="$(command -v bash)"
-
-    local version_str
-    version_str="$(bash --version | head -n 1)"
-
-    local major="${BASH_VERSINFO[0]}"
-    local minor="${BASH_VERSINFO[1]}"
-    local patch="${BASH_VERSINFO[2]}"
-
-    log::debug "Bash binary: $bash_bin"
-    log::debug "Bash version string: $version_str"
-    log::debug "BASH_VERSINFO: major=$major, minor=$minor, patch=$patch"
-    log::debug "Shell path: $SHELL"
-    log::debug "Current shell PID: $$"
-}
 
 require_bash_version() {
     local min_major=4

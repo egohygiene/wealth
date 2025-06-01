@@ -58,7 +58,8 @@
         "redhat.ansible",
         "mrmlnc.vscode-apache",
         "EditorConfig.EditorConfig",
-        "christian-kohler.npm-intellisense"
+        "christian-kohler.npm-intellisense",
+        "timonwong.shellcheck"
       ]
     }
   }

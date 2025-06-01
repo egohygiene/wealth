@@ -45,7 +45,7 @@
             "settings": {
                 "github.copilot.chat.codeGeneration.instructions": [
                     {
-                        "text": "This dev container includes the Nix package manager pre-installed and available on the `PATH`. Currently `flakeUri` works best with a remote URI (e.g., `github:nixos/nixpkgs/nixpkgs-unstable#hello`) as local files need to be in the image. The dev container supports two installation models for Nix: multi-user and single user. Multi-user is the default."
+                        "text": "This dev container includes an up-to-date version of Git, built from source as needed, pre-installed and available on the `PATH`."
                     }
                 ]
             }
@@ -56,13 +56,5 @@
     ],
     "containerEnv": {
         "PATH": "/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin:${PATH}"
-    },
-    "mounts": [
-        {
-            "source": "nix-store-${devcontainerId}",
-            "target": "/nix",
-            "type": "volume"
-        }
-    ],
-    "entrypoint": "/usr/local/share/nix-entrypoint.sh"
+    }
 }

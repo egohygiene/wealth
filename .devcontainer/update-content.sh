@@ -11,82 +11,6 @@
 #   ./install-devtools.sh --local --fresh
 # ------------------------------------------------------------------------------
 
-terminal::is_term() {
-    [[ -t 1 || -z ${TERM} ]] && return 0 || return 1
-}
-
-realpath() {
-    local path="$1"
-    if command -v realpath >/dev/null 2>&1; then
-        command realpath "$path"
-    else
-        # Fallback for POSIX systems (no symlink resolution)
-        (cd "$(dirname "$path")" && printf "%s/%s\n" "$(pwd -P)" "$(basename "$path")")
-    fi
-}
-
-log::emoji_for() {
-    case "$1" in
-    info) printf "🔹" ;;
-    warn) printf "⚠️ " ;;
-    error) printf "❌" ;;
-    success) printf "✅" ;;
-    debug) printf "🐞" ;;
-    *) printf "➖" ;;
-    esac
-}
-
-log::__color() {
-    case "$1" in
-    red) printf '\033[1;31m' ;;
-    green) printf '\033[1;32m' ;;
-    yellow) printf '\033[1;33m' ;;
-    blue) printf '\033[1;34m' ;;
-    gray) printf '\033[0;90m' ;;
-    none | reset | *) printf '\033[0m' ;;
-    esac
-}
-
-log::__print() {
-    local level="$1"
-    local emoji="$2"
-    local color="$3"
-    local message="$4"
-
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-
-    # Bash 3.2-safe uppercasing
-    local upper_level
-    upper_level="$(printf "%s" "$level" | tr '[:lower:]' '[:upper:]')"
-
-    local prefix="${emoji} ${upper_level}:"
-
-    local log_line_console log_line_file
-
-    if terminal::is_term; then
-        log_line_console=$(printf "%s %b%-12s%b %s\n" \
-            "$timestamp" \
-            "$(log::__color "$color")" "$prefix" "$(log::__color reset)" \
-            "$message")
-    else
-        log_line_console=$(printf "%s %-12s %s\n" "$timestamp" "$prefix" "$message")
-    fi
-
-    log_line_file=$(printf "%s %-12s %s\n" "$timestamp" "$prefix" "$message")
-
-    # Print to console and append to log file if defined
-    printf "%s\n" "$log_line_console" >&2
-    [[ -n "${LOG_FILE:-}" ]] && printf "%s\n" "$log_line_file" >>"$LOG_FILE"
-}
-
-log::info() { log::__print "info" "🔹" blue "$*"; }
-log::warn() { log::__print "warn" "⚠️ " yellow "$*"; }
-log::error() { log::__print "error" "❌" red "$*"; }
-log::success() { log::__print "success" "✅" green "$*"; }
-log::debug() { log::__print "debug" "🐞" gray "$*"; }
-
-log() { log::info "$@"; }
 
 # Exit on unhandled error with full context
 on_error() {
@@ -123,47 +47,6 @@ require_bash_version() {
         log "❌ Bash version $bash_major.$bash_minor detected. Bash $min_major.0+ is required."
         exit 1
     fi
-}
-
-date::now() {
-    declare now
-    now="$(date --universal +%s)" || return $?
-    printf "%s" "${now}"
-}
-
-detect_os_arch() {
-    OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-    ARCH="$(uname -m)"
-    case "$ARCH" in
-    x86_64) ARCH="amd64" ;;
-    aarch64 | arm64) ARCH="arm64" ;;
-    *) log "❌ Unsupported architecture: $ARCH" && exit 1 ;;
-    esac
-    log "🖥️  OS: $OS, Arch: $ARCH"
-}
-
-is_debian() {
-    [[ -f /etc/debian_version ]]
-}
-
-is_ubuntu() {
-    [[ -f /etc/lsb-release && $(grep -c "DISTRIB_ID=Ubuntu" /etc/lsb-release) -gt 0 ]]
-}
-
-is_macos() {
-    [[ "$OS" == "darwin" ]]
-}
-
-is_linux() {
-    [[ "$OS" == "linux" ]]
-}
-
-is_windows() {
-    [[ "$OS" == "cygwin" || "$OS" == "mingw"* ]]
-}
-
-is_wsl() {
-    [[ "$OS" == "linux" && -f /proc/version && $(grep -c "Microsoft" /proc/version) -gt 0 ]]
 }
 
 ensure_log_dir() {

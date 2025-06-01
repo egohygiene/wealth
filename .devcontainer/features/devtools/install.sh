@@ -2,10 +2,121 @@
 # Install devtools feature for a development container
 
 # Move to the same directory as this script
-set -e
+set -euo pipefail
 FEATURE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${FEATURE_DIR}"
 
+# -----------------------------------------------------------------------------
+# Function: realpath
+#
+# Description:
+#   Resolves an absolute path. Uses the system realpath if available,
+#   otherwise falls back to a POSIX-compliant implementation.
+#
+# Usage:
+#   resolved=$(realpath ./relative/file)
+#
+# Arguments:
+#   $1 - Path to resolve.
+#
+# Returns:
+#   Prints the absolute path or exits non-zero on error.
+# -----------------------------------------------------------------------------
+realpath() {
+    local path="$1"
+    if command -v realpath >/dev/null 2>&1; then
+        command realpath "$path"
+    else
+        # Fallback for POSIX systems (no symlink resolution)
+        (cd "$(dirname "$path")" && printf "%s/%s\n" "$(pwd -P)" "$(basename "$path")")
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# Function: trap::on_error
+#
+# Description:
+#   Trap function triggered when a command fails under `set -e`.
+#   Prints error details (line number and exit code) to stderr and exits.
+#
+# Usage:
+#   trap 'trap::on_error $LINENO' ERR
+#
+# Arguments:
+#   $1 - Line number where the error occurred.
+#
+# Returns:
+#   Exits with the same exit code that caused the trap.
+# -----------------------------------------------------------------------------
+trap::on_error() {
+  local exit_code=$?
+  local line_no=$1
+  printf "❌ Error on line %s. Exit code: %d\n" "$line_no" "$exit_code" >&2
+  exit "$exit_code"
+}
+
+# -----------------------------------------------------------------------------
+# Function: trap::on_exit
+#
+# Description:
+#   Trap function triggered on script exit, successful or not.
+#   Can be used for cleanup or logging.
+#
+# Usage:
+#   trap trap::on_exit EXIT
+#
+# Arguments:
+#   None
+#
+# Returns:
+#   Nothing (exit proceeds).
+# -----------------------------------------------------------------------------
+trap::on_exit() {
+  local exit_code=$?
+  printf "📤 Script exited with code %d\n" "$exit_code" >&2
+}
+
+# -----------------------------------------------------------------------------
+# Function: trap::on_interrupt
+#
+# Description:
+#   Trap function triggered by Ctrl+C (SIGINT).
+#   Prints a message and exits with code 130 (SIGINT convention).
+#
+# Usage:
+#   trap trap::on_interrupt INT
+#
+# Arguments:
+#   None
+#
+# Returns:
+#   Exits with status 130.
+# -----------------------------------------------------------------------------
+trap::on_interrupt() {
+  printf "🚫 Interrupted by user (Ctrl+C)\n" >&2
+  exit 130
+}
+
+# -----------------------------------------------------------------------------
+# Function: trap::setup
+#
+# Description:
+#   Installs standard traps for error handling, interrupt signals, and clean exit.
+#
+# Usage:
+#   trap::setup
+#
+# Arguments:
+#   None
+#
+# Returns:
+#   Registers traps globally for ERR, EXIT, and INT.
+# -----------------------------------------------------------------------------
+trap::setup() {
+  trap 'trap::on_error $LINENO' ERR
+  trap trap::on_exit EXIT
+  trap trap::on_interrupt INT
+}
 
 # -----------------------------------------------------------------------------
 # Function: color::reset
@@ -167,7 +278,59 @@ color::gray() {
 #   Exit code 0 if stdout is a terminal, non-zero otherwise.
 # -----------------------------------------------------------------------------
 terminal::is_term() {
-    [[ -t 1 || -z ${TERM} ]] && return 0 || return 1
+  [[ -t 1 && -n "${TERM:-}" ]] || return 1
+}
+
+# -----------------------------------------------------------------------------
+# Function: log::__print
+#
+# Description:
+#   Internal logging engine. Handles formatting, color, emoji, and file output.
+#
+# Usage:
+#   log::__print "info" "🔹" "$(color::blue)" "Starting process..."
+#
+# Arguments:
+#   $1 - Log level (e.g., "info", "warn")
+#   $2 - Emoji symbol
+#   $3 - ANSI color string (e.g., "$(color::red)")
+#   $@ - Message to log
+#
+# Returns:
+#   Prints the formatted log line to stderr, and to $LOG_FILE if defined.
+# -----------------------------------------------------------------------------
+log::__print() {
+  local level="$1"
+  local emoji="$2"
+  local color="$3"
+  shift 3
+  local message="$*"
+
+  local timestamp
+  timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+
+  local upper_level
+  upper_level="$(printf "%s" "$level" | tr '[:lower:]' '[:upper:]')"
+
+  local prefix="${emoji} ${upper_level}:"
+
+  local log_line_console log_line_file
+
+  if terminal::is_term; then
+    log_line_console=$(printf "%s %b%-12s%b %s" \
+      "$timestamp" \
+      "$color" "$prefix" "$(color::reset)" \
+      "$message")
+  else
+    log_line_console=$(printf "%s %-12s %s" "$timestamp" "$prefix" "$message")
+  fi
+
+  log_line_file=$(printf "%s %-12s %s" "$timestamp" "$prefix" "$message")
+
+  printf "%s\n" "$log_line_console" >&2
+  if [[ -n "${LOG_FILE:-}" && -n "${LOG_FILE// }" ]]; then
+    printf "%s\n" "$log_line_file" >> "$LOG_FILE"
+  fi
 }
 
 # -----------------------------------------------------------------------------
@@ -197,88 +360,11 @@ log::emoji_for() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: log::__color
-#
-# Description:
-#   Returns an ANSI escape sequence for a given color keyword.
-#
-# Usage:
-#   printf "%sColored Text%s\n" "$(log::__color red)" "$(log::__color reset)"
-#
-# Arguments:
-#   $1 - Color name (red, green, yellow, blue, gray, none/reset)
-#
-# Returns:
-#   ANSI escape code string for terminal color.
-# -----------------------------------------------------------------------------
-log::__color() {
-  case "$1" in
-    red)    printf '\033[1;31m' ;;
-    green)  printf '\033[1;32m' ;;
-    yellow) printf '\033[1;33m' ;;
-    blue)   printf '\033[1;34m' ;;
-    gray)   printf '\033[0;90m' ;;
-    none | reset | *) printf '\033[0m' ;;
-  esac
-}
-
-# -----------------------------------------------------------------------------
-# Function: log::__print
-#
-# Description:
-#   Internal logging engine. Handles formatting, color, emoji, and file output.
-#
-# Usage:
-#   log::__print "info" "🔹" color::blue "Starting process..."
-#
-# Arguments:
-#   $1 - Log level (e.g., "info", "warn")
-#   $2 - Emoji symbol
-#   $3 - Name of color function (e.g., color::blue)
-#   $4 - Log message (string)
-#
-# Returns:
-#   Prints the formatted log line to stderr, and to $LOG_FILE if defined.
-# -----------------------------------------------------------------------------
-log::__print() {
-  local level="$1"
-  local emoji="$2"
-  local color_fn="$3"
-  local message="$4"
-
-  local timestamp
-  timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-
-  # Uppercase safely
-  local upper_level
-  upper_level="$(printf "%s" "$level" | tr '[:lower:]' '[:upper:]')"
-
-  local prefix="${emoji} ${upper_level}:"
-
-  local log_line_console log_line_file
-
-  if terminal::is_term; then
-    log_line_console=$(printf "%s %b%-12s%b %s" \
-      "$timestamp" \
-      "$(${color_fn})" "$prefix" "$(color::reset)" \
-      "$message")
-  else
-    log_line_console=$(printf "%s %-12s %s" "$timestamp" "$prefix" "$message")
-  fi
-
-  log_line_file=$(printf "%s %-12s %s" "$timestamp" "$prefix" "$message")
-
-  printf "%s\n" "$log_line_console" >&2
-  [[ -n "${LOG_FILE:-}" ]] && printf "%s\n" "$log_line_file" >>"$LOG_FILE"
-}
-
-
-# -----------------------------------------------------------------------------
 # Function: log::info
 # Description: Logs an informational message (blue).
 # -----------------------------------------------------------------------------
 log::info() {
-  log::__print "info" "$(log::emoji_for info)" color::blue "$*"
+  log::__print "info" "$(log::emoji_for info)" "$(color::blue)" "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -286,7 +372,7 @@ log::info() {
 # Description: Logs a warning message (yellow).
 # -----------------------------------------------------------------------------
 log::warn() {
-  log::__print "warn" "$(log::emoji_for warn)" color::yellow "$*"
+  log::__print "warn" "$(log::emoji_for warn)" "$(color::yellow)" "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -294,7 +380,7 @@ log::warn() {
 # Description: Logs an error message (red).
 # -----------------------------------------------------------------------------
 log::error() {
-  log::__print "error" "$(log::emoji_for error)" color::red "$*"
+  log::__print "error" "$(log::emoji_for error)" "$(color::red)" "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -302,7 +388,7 @@ log::error() {
 # Description: Logs a success message (green).
 # -----------------------------------------------------------------------------
 log::success() {
-  log::__print "success" "$(log::emoji_for success)" color::green "$*"
+  log::__print "success" "$(log::emoji_for success)" "$(color::green)" "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -310,7 +396,7 @@ log::success() {
 # Description: Logs a debug message (gray).
 # -----------------------------------------------------------------------------
 log::debug() {
-  log::__print "debug" "$(log::emoji_for debug)" color::gray "$*"
+  log::__print "debug" "$(log::emoji_for debug)" "$(color::gray)" "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -320,8 +406,6 @@ log::debug() {
 log() {
   log::info "$@"
 }
-
-
 
 # -----------------------------------------------------------------------------
 # Function: date::now
@@ -777,37 +861,24 @@ bash::print_info() {
   done < <(bash::options)
 }
 
+main() {
+    trap::setup
 
+    # Ensure we are in the correct directory
+    cd "$(realpath "${FEATURE_DIR}")"
 
+    # Set up logging file if needed
+    # LOG_FILE="${LOG_FILE:-/dev/null}"
 
-
-
-
-
-
-# -----------------------------------------------------------------------------
-# Function: realpath
-#
-# Description:
-#   Resolves an absolute path. Uses the system realpath if available,
-#   otherwise falls back to a POSIX-compliant implementation.
-#
-# Usage:
-#   resolved=$(realpath ./relative/file)
-#
-# Arguments:
-#   $1 - Path to resolve.
-#
-# Returns:
-#   Prints the absolute path or exits non-zero on error.
-# -----------------------------------------------------------------------------
-realpath() {
-    local path="$1"
-    if command -v realpath >/dev/null 2>&1; then
-        command realpath "$path"
-    else
-        # Fallback for POSIX systems (no symlink resolution)
-        (cd "$(dirname "$path")" && printf "%s/%s\n" "$(pwd -P)" "$(basename "$path")")
-    fi
+    log "   • Version         : $(bash::version)"
+    log "   • Major Version   : $(bash::major_version)"
+    log "   • Minor Version   : $(bash::minor_version)"
+    log "   • Path            : $(bash::path)"
+    log::info "Starting setup..."
+    log::warn "This might take a while"
+    log::error "Something went wrong"
+    log::success "All done!"
+    log::debug "Path: $PATH"
 }
 
+main "$@"

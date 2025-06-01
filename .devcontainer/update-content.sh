@@ -12,13 +12,7 @@
 # ------------------------------------------------------------------------------
 
 
-# Exit on unhandled error with full context
-on_error() {
-    local exit_code=$?
-    local line_no=$1
-    log "❌ Error on line $line_no. Exit code: $exit_code"
-    exit "$exit_code"
-}
+
 
 bash::info() {
     local bash_bin

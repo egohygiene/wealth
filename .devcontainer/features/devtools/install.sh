@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# Install devtools feature for a development container
+# Install developer tools for a development container
 
-# Move to the same directory as this script
 set -euo pipefail
-FEATURE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "${FEATURE_DIR}"
 
 # -----------------------------------------------------------------------------
 # Function: cmd::exists
@@ -477,100 +474,6 @@ os::operating_system() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: os::architecture
-#
-# Description:
-#   Detects the CPU architecture and normalizes it into a standard name.
-#
-# Usage:
-#   arch="$(os::architecture)"
-#
-# Arguments:
-#   None
-#
-# Returns:
-#   Prints the normalized architecture (e.g., "amd64", "arm64").
-#   Exits with error and logs a message if unsupported.
-#
-# Example:
-#   if [[ "$(os::architecture)" == "arm64" ]]; then echo "ARM machine"; fi
-# -----------------------------------------------------------------------------
-os::architecture() {
-  local raw_arch
-  raw_arch="$(uname -m 2>/dev/null || true)"
-
-  case "${raw_arch}" in
-    x86_64)   printf "amd64\n" ;;
-    aarch64 | arm64) printf "arm64\n" ;;
-    *)
-      log "❌ Unsupported architecture: ${raw_arch}"
-      return 1
-      ;;
-  esac
-}
-
-# -----------------------------------------------------------------------------
-# Function: os::kernel
-#
-# Description:
-#   Returns the kernel release string (e.g., the output of `uname -r`).
-# -----------------------------------------------------------------------------
-os::kernel() {
-  uname -r 2>/dev/null || true
-}
-
-# -----------------------------------------------------------------------------
-# Function: os::distro
-#
-# Description:
-#   Returns the distribution ID from /etc/os-release if available.
-# -----------------------------------------------------------------------------
-os::distro() {
-  [[ -f /etc/os-release ]] && grep '^ID=' /etc/os-release | cut -d= -f2 | tr -d '"'
-}
-
-# -----------------------------------------------------------------------------
-# Function: os::version
-#
-# Description:
-#   Returns the distribution version from /etc/os-release if available.
-# -----------------------------------------------------------------------------
-os::version() {
-  [[ -f /etc/os-release ]] && grep '^VERSION_ID=' /etc/os-release | cut -d= -f2 | tr -d '"'
-}
-
-# -----------------------------------------------------------------------------
-# Function: os::detect
-#
-# Description:
-#   Detects the host operating system and architecture, sets global OS and ARCH
-#   variables, and logs the result.
-#
-# Usage:
-#   os::detect
-#
-# Arguments:
-#   None
-#
-# Returns:
-#   Sets global variables OS and ARCH.
-#   Exits with error if the architecture is unsupported.
-#
-# Example:
-#   os::detect
-#   echo "Detected: $OS / $ARCH"
-# -----------------------------------------------------------------------------
-os::detect() {
-  OS="$(os::operating_system)"
-  ARCH="$(os::architecture)" || exit 1
-  OS_KERNEL="$(os::kernel)"
-  OS_DISTRO="$(os::distro)"
-  OS_VERSION="$(os::version)"
-  OS_ID_LIKE="$(os::id_like)"
-  log "🖥️  OS: ${OS} ${OS_DISTRO}-${OS_VERSION} (${ARCH}), Kernel: ${OS_KERNEL}"
-}
-
-# -----------------------------------------------------------------------------
 # Function: os::is_linux
 #
 # Description:
@@ -687,6 +590,77 @@ os::is_ubuntu() {
 }
 
 # -----------------------------------------------------------------------------
+# Function: os::architecture
+#
+# Description:
+#   Detects the CPU architecture and normalizes it into a standard name.
+#
+# Usage:
+#   arch="$(os::architecture)"
+#
+# Arguments:
+#   None
+#
+# Returns:
+#   Prints the normalized architecture (e.g., "amd64", "arm64").
+#   Exits with error and logs a message if unsupported.
+#
+# Example:
+#   if [[ "$(os::architecture)" == "arm64" ]]; then echo "ARM machine"; fi
+# -----------------------------------------------------------------------------
+os::architecture() {
+  local raw_arch
+  raw_arch="$(uname -m 2>/dev/null || true)"
+
+  case "${raw_arch}" in
+    x86_64)   printf "amd64\n" ;;
+    aarch64 | arm64) printf "arm64\n" ;;
+    *)
+      log "❌ Unsupported architecture: ${raw_arch}"
+      return 1
+      ;;
+  esac
+}
+
+# -----------------------------------------------------------------------------
+# Function: os::kernel
+#
+# Description:
+#   Returns the kernel release string (e.g., the output of `uname -r`).
+# -----------------------------------------------------------------------------
+os::kernel() {
+  uname -r 2>/dev/null || true
+}
+
+# -----------------------------------------------------------------------------
+# Function: os::distro
+#
+# Description:
+#   Returns the distribution ID from /etc/os-release if available.
+# -----------------------------------------------------------------------------
+os::distro() {
+    if [[ -f /etc/os-release ]]; then
+        grep '^ID=' /etc/os-release | cut -d= -f2 | tr -d '"'
+    elif os::is_macos; then
+        printf "macos"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# Function: os::version
+#
+# Description:
+#   Returns the distribution version from /etc/os-release if available.
+# -----------------------------------------------------------------------------
+os::version() {
+    if [[ -f /etc/os-release ]]; then
+        grep '^VERSION_ID=' /etc/os-release | cut -d= -f2 | tr -d '"'
+    elif os::is_macos; then
+        sw_vers -productVersion 2>/dev/null
+    fi
+}
+
+# -----------------------------------------------------------------------------
 # Function: os::id_like
 #
 # Description:
@@ -702,7 +676,11 @@ os::is_ubuntu() {
 #   Prints the ID_LIKE string (e.g., "debian", "rhel") or nothing if unavailable.
 # -----------------------------------------------------------------------------
 os::id_like() {
-  [[ -f /etc/os-release ]] && grep '^ID_LIKE=' /etc/os-release | cut -d= -f2 | tr -d '"'
+    if [[ -f /etc/os-release ]]; then
+        grep '^ID_LIKE=' /etc/os-release | cut -d= -f2 | tr -d '"' || true
+    elif os::is_macos; then
+        printf "darwin"
+    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -725,13 +703,13 @@ os::is_supported() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: os::info
+# Function: os::print_info
 #
 # Description:
 #   Outputs OS and architecture information as a JSON-like string.
 #
 # Usage:
-#   os::info
+#   os::print_info
 #
 # Arguments:
 #   None
@@ -739,8 +717,57 @@ os::is_supported() {
 # Returns:
 #   Prints: {"os":"linux","arch":"amd64"}
 # -----------------------------------------------------------------------------
-os::info() {
+os::print_info() {
   printf '{"os":"%s","arch":"%s"}\n' "$(os::operating_system)" "$(os::architecture)"
+}
+
+# -----------------------------------------------------------------------------
+# Function: os::setup
+#
+# Description:
+#   Detects the host operating system and architecture, sets global OS and ARCH
+#   variables, and logs the result.
+#
+# Usage:
+#   os::setup
+#
+# Arguments:
+#   None
+#
+# Returns:
+#   Sets global variables OS and ARCH.
+#   Exits with error if the architecture is unsupported.
+#
+# Example:
+#   os::setup
+#   echo "Detected: $OS / $ARCH"
+# -----------------------------------------------------------------------------
+os::setup() {
+    OS="$(os::operating_system)"
+    log "🖥️  Detected OS: ${OS}"
+
+    ARCH="$(os::architecture)"
+    log "💻 Detected Architecture: ${ARCH}"
+
+    OS_KERNEL="$(os::kernel)"
+    log "🛠️  Kernel: ${OS_KERNEL}"
+
+    OS_DISTRO="$(os::distro)"
+    log "📦 Distribution: ${OS_DISTRO:-unknown}"
+
+    OS_VERSION="$(os::version)"
+    log "🔢 Version: ${OS_VERSION:-unknown}"
+
+    OS_ID_LIKE="$(os::id_like)"
+    log "🆔 ID_LIKE: ${OS_ID_LIKE:-unknown}"
+
+    if ! os::is_supported; then
+        log "❌ Unsupported OS or architecture: ${OS} / ${ARCH}"
+        exit 1
+    fi
+
+    OPERATING_SYSTEM="${OS} ${OS_DISTRO}-${OS_VERSION} (${ARCH}), Kernel: ${OS_KERNEL}"
+    log "🖥️  Operating System: ${OPERATING_SYSTEM}"
 }
 
 # -----------------------------------------------------------------------------
@@ -915,18 +942,43 @@ bash::print_info() {
 }
 
 # -----------------------------------------------------------------------------
-# Function: script::detect
+# Function: script::path
+#
+# Description:
+#   Resolves the absolute path of the currently executing script.
+#   Works across Bash, Dash, POSIX, Zsh, and on systems without GNU readlink.
+#
+# Usage:
+#   path="$(script::path)"
+#
+# Returns:
+#   Prints the absolute path to the script (not the cwd).
+# -----------------------------------------------------------------------------
+script::path() {
+  # shellcheck disable=SC2296
+  local src="${BASH_SOURCE[0]:-${(%):-%x}}"  # Bash or Zsh-safe fallback
+  while [ -h "$src" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "$src")" >/dev/null 2>&1 && pwd)"
+    src="$(readlink "$src")"
+    [[ "$src" != /* ]] && src="$dir/$src"
+  done
+  cd -P "$(dirname "$src")" >/dev/null 2>&1 && pwd
+}
+
+# -----------------------------------------------------------------------------
+# Function: script::info
 #
 # Description:
 #   Detects information about the running script and stores it in globals.
 # -----------------------------------------------------------------------------
-script::detect() {
+script::info() {
   SCRIPT_SHELL="${SHELL:-$(command -v bash)}"
   SCRIPT_PID="$$"
   ORIGINAL_CWD="$(pwd)"
   SCRIPT_PARAMS="$*"
-  SCRIPT_PATH="${BASH_SOURCE[0]}"
-  SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+  SCRIPT_DIR="$(script::path)"
+  SCRIPT_PATH="${SCRIPT_DIR}/$(basename "$0")"
   SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
 
   log::debug "Original CWD     : $ORIGINAL_CWD"
@@ -940,29 +992,25 @@ script::detect() {
 
 init() {
   trap::setup
-
-  os::detect
-  script::detect "$@"
+  os::setup
+#   script::info "$@"
 }
 
 main() {
     init "$@"
 
-    # Ensure we are in the correct directory
-    cd "$(realpath "${FEATURE_DIR}")"
-
     # Set up logging file if needed
     # LOG_FILE="${LOG_FILE:-/dev/null}"
 
-    log "   • Version         : $(bash::version)"
-    log "   • Major Version   : $(bash::major_version)"
-    log "   • Minor Version   : $(bash::minor_version)"
-    log "   • Path            : $(bash::path)"
-    log::info "Starting setup..."
-    log::warn "This might take a while"
-    log::error "Something went wrong"
-    log::success "All done!"
-    log::debug "Path: $PATH"
+    # log "   • Version         : $(bash::version)"
+    # log "   • Major Version   : $(bash::major_version)"
+    # log "   • Minor Version   : $(bash::minor_version)"
+    # log "   • Path            : $(bash::path)"
+    # log::info "Starting setup..."
+    # log::warn "This might take a while"
+    # log::error "Something went wrong"
+    # log::success "All done!"
+    # log::debug "Path: $PATH"
 }
 
 main "$@"

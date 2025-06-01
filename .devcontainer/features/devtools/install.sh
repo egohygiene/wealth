@@ -861,8 +861,14 @@ bash::print_info() {
   done < <(bash::options)
 }
 
+init() {
+  trap::setup
+
+  os::detect
+}
+
 main() {
-    trap::setup
+    init "$@"
 
     # Ensure we are in the correct directory
     cd "$(realpath "${FEATURE_DIR}")"

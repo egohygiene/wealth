@@ -5,6 +5,7 @@
         "bbenoist.nix",
         "redhat.ansible",
         "mrmlnc.vscode-apache",
-        "editorconfig.editorconfig"
+        "editorconfig.editorconfig",
+        "mads-hartmann.bash-ide-vscode"
     ]
 }

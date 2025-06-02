@@ -17,19 +17,25 @@ class Wealth(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     def update_timestamp(self):
+        """Refresh the ``updated_at`` timestamp to the current time."""
         self.updated_at = datetime.now(timezone.utc)
 
     def __str__(self):
+        """Return a readable representation of the wealth object."""
         return f"Wealth<{self.name} | {self.user_id}>"
 
     def __repr__(self):
+        """Return the ``str`` representation for debugging."""
         return self.__str__()
 
     def to_dict(self):
+        """Serialize the model to a ``dict``."""
         return self.model_dump()
 
     def to_json(self, indent: Optional[int] = 4, **kwargs: Any):
+        """Serialize the model to a JSON string."""
         return self.model_dump_json(indent=indent, **kwargs)
 
     def to_dataframe(self) -> pd.DataFrame:
+        """Convert the model to a single-row ``DataFrame``."""
         return pd.DataFrame([self.model_dump()])

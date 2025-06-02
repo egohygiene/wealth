@@ -16,6 +16,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
+    """Run migrations in offline mode using the configured URL."""
     url = get_database_url()
     context.configure(url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={"paramstyle": "named"})
 
@@ -24,6 +25,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    """Helper to configure the context and run migrations."""
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
@@ -31,6 +33,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_migrations_online() -> None:
+    """Create an async engine and run migrations in online mode."""
     connectable = create_async_engine(get_database_url(), poolclass=pool.NullPool)
 
     async with connectable.connect() as connection:

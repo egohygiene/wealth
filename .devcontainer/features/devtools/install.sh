@@ -1016,10 +1016,36 @@ script::init() {
   log "Current shell PID: $SCRIPT_PID"
 }
 
+# -----------------------------------------------------------------------------
+# Function: logger::logs_dir
+#
+# Description:
+#   Returns the directory path where log files will be stored. Defaults to
+#   `./logs` when the `DEVTOOLS_LOGS` environment variable is not set.
+#
+# Usage:
+#   logs_dir=$(logger::logs_dir)
+#
+# Returns:
+#   Prints the path to the logs directory.
+# -----------------------------------------------------------------------------
 logger::logs_dir() {
     echo "${DEVTOOLS_LOGS:-./logs}"
 }
 
+# -----------------------------------------------------------------------------
+# Function: logger::init
+#
+# Description:
+#   Initializes logging by creating the logs directory if needed and defining
+#   the path to the log file used by the script.
+#
+# Usage:
+#   logger::init
+#
+# Returns:
+#   Sets the global variable `LOG_FILE`.
+# -----------------------------------------------------------------------------
 logger::init() {
     local logs_dir
     logs_dir="$(logger::logs_dir)"
@@ -1039,22 +1065,74 @@ logger::init() {
     log "📁 Logs will be written to $LOG_FILE"
 }
 
+# -----------------------------------------------------------------------------
+# Function: asdf::version
+#
+# Description:
+#   Determines the asdf version to install based on the `ASDFVERSION`
+#   environment variable or defaults to `latest`.
+#
+# Usage:
+#   asdf_version=$(asdf::version)
+#
+# Returns:
+#   Prints the asdf version string.
+# -----------------------------------------------------------------------------
 asdf::version() {
     local asdf_version
     asdf_version="${ASDFVERSION:-"latest"}"
     echo "${asdf_version}"
 }
 
+# -----------------------------------------------------------------------------
+# Function: taskfile::version
+#
+# Description:
+#   Determines the Taskfile version to install based on the
+#   `TASKFILEVERSION` environment variable or defaults to `latest`.
+#
+# Usage:
+#   version=$(taskfile::version)
+#
+# Returns:
+#   Prints the Taskfile version string.
+# -----------------------------------------------------------------------------
 taskfile::version() {
     local taskfile_version
     taskfile_version="${TASKFILEVERSION:-"latest"}"
     echo "${taskfile_version}"
 }
 
+# -----------------------------------------------------------------------------
+# Function: taskfile::home
+#
+# Description:
+#   Echoes the directory where the Taskfile binary will be installed.
+#   Defaults to `/usr/local/bin` unless `TASKFILE_HOME_DIR` is specified.
+#
+# Usage:
+#   binary_dir=$(taskfile::home)
+#
+# Returns:
+#   Prints the installation directory path.
+# -----------------------------------------------------------------------------
 taskfile::home() {
     echo "${TASKFILE_HOME_DIR:-"$HOME/.taskfile"}"
 }
 
+# -----------------------------------------------------------------------------
+# Function: taskfile::verify
+#
+# Description:
+#   Validates the Taskfile installation by checking if the binary exists and
+#   printing its version. Returns an error if the binary cannot be found.
+#
+# Usage:
+#   taskfile::verify
+#
+# Returns:
+#   Exit status 0 if installed, non-zero otherwise.
+# -----------------------------------------------------------------------------
 taskfile::verify() {
     local binary_path
     binary_path="$(taskfile::home)/task"
@@ -1068,10 +1146,30 @@ taskfile::verify() {
     fi
 }
 
+# -----------------------------------------------------------------------------
+# Function: install::asdf
+#
+# Description:
+#   Installs the asdf version manager if it is not already installed.
+#   Currently this is a placeholder that simply logs the action.
+#
+# Usage:
+#   install::asdf
+# -----------------------------------------------------------------------------
 install::asdf() {
     log "📥 Installing ASDF version manager '$(asdf::version)'..."
 }
 
+# -----------------------------------------------------------------------------
+# Function: install::taskfile
+#
+# Description:
+#   Downloads and installs the Taskfile binary in the directory returned by
+#   `taskfile::home` if it is not already present.
+#
+# Usage:
+#   install::taskfile
+# -----------------------------------------------------------------------------
 install::taskfile() {
     local home_dir
     home_dir="$(taskfile::home)"
@@ -1089,6 +1187,13 @@ install::taskfile() {
     taskfile::verify
 }
 
+# -----------------------------------------------------------------------------
+# Function: install
+#
+# Description:
+#   Installs all development tooling required for this container by calling the
+#   individual install functions.
+# -----------------------------------------------------------------------------
 install() {
     log "🔧 Installing development tools..."
     install::asdf
@@ -1139,6 +1244,16 @@ preflight::check() {
     log::success "✅ Preflight checks passed."
 }
 
+# -----------------------------------------------------------------------------
+# Function: init
+#
+# Description:
+#   Performs initialization routines before running installs: sets up traps,
+#   logging, runs preflight checks and prints environment information.
+#
+# Usage:
+#   init "$@"
+# -----------------------------------------------------------------------------
 init() {
     trap::init
     logger::init
@@ -1149,6 +1264,16 @@ init() {
     log "🚀 Starting development environment setup..."
 }
 
+# -----------------------------------------------------------------------------
+# Function: main
+#
+# Description:
+#   Entry point for the script. Initializes the environment and performs the
+#   installation of development tools.
+#
+# Usage:
+#   main "$@"
+# -----------------------------------------------------------------------------
 main() {
     init "$@"
     install

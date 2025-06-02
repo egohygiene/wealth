@@ -50,6 +50,7 @@ oauth.register(
 
 @app.on_event("startup")
 async def startup_event() -> None:
+    """Initialize application services and apply database migrations."""
     log.info("Startup initiated")
     await keycloak.load_config()
     await run_migrations_async()
@@ -58,6 +59,7 @@ async def startup_event() -> None:
 
 @app.on_event("shutdown")
 async def shutdown_event() -> None:
+    """Dispose of resources during application shutdown."""
     log.info("Shutting down")
     await engine.dispose()
 
@@ -68,12 +70,14 @@ app.include_router(keycloak.get_auth_router())
 
 @app.get("/login/google")
 async def login_google(request: Request):
+    """Start the Google OAuth login flow."""
     redirect_uri = request.url_for("google_callback")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
 @app.get("/auth/google")
 async def google_callback(request: Request):
+    """Handle the Google OAuth callback and return user info."""
     token = await oauth.google.authorize_access_token(request)
     user = await oauth.google.parse_id_token(request, token)
     return {
@@ -95,6 +99,7 @@ async def create_message(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(map_user),
 ):
+    """Create a ``Message`` record for the current user."""
     user_dao = UserDAO(session)
     db_user = await user_dao.get_or_create(
         user.sub, user.preferred_username, user.email
@@ -110,6 +115,7 @@ async def read_messages(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(map_user),
 ):
+    """Return all stored messages."""
     dao = MessageDAO(session)
     return await dao.list_all()
 
@@ -120,6 +126,7 @@ async def generate_message(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(map_user),
 ):
+    """Create an auto-generated message for the current user."""
     user_dao = UserDAO(session)
     db_user = await user_dao.get_or_create(
         user.sub, user.preferred_username, user.email
@@ -137,6 +144,7 @@ async def create_map_state(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(map_user),
 ):
+    """Persist a map state object for the current user."""
     user_dao = UserDAO(session)
     db_user = await user_dao.get_or_create(
         user.sub, user.preferred_username, user.email
@@ -152,5 +160,6 @@ async def read_map_states(
     session: AsyncSession = Depends(get_session),
     user: OIDCUser = Depends(map_user),
 ):
+    """Return all saved map states."""
     dao = MapStateDAO(session)
     return await dao.list_all()

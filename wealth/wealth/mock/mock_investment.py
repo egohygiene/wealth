@@ -10,6 +10,7 @@ from wealth.models.risk import RiskType, Risk
 fake = Faker()
 
 def generate_mock_investment(user_id: str) -> Investment:
+    """Produce a random ``Investment`` for testing."""
     asset_type = choice(list(AssetType))
     risk_level = choice(list(RiskType))
     invested = round(uniform(100, 5000), 2)
@@ -37,6 +38,7 @@ def generate_mock_investment(user_id: str) -> Investment:
     )
 
 def generate_mock_investment_list(user_id: str, count: int = 4) -> List[Investment]:
+    """Return multiple mocked investments."""
     return [generate_mock_investment(user_id) for _ in range(count)]
 
 # 🧪 Standalone test

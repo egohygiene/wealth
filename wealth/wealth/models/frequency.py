@@ -16,6 +16,7 @@ class Frequency(str, Enum):
     IRREGULAR = "irregular"
 
     def to_monthly_multiplier(self) -> float:
+        """Return a factor for converting this frequency to a monthly value."""
         mapping: dict[Frequency, float] = {
             Frequency.ONE_TIME: 0.0,
             Frequency.DAILY: 30.44,
@@ -33,6 +34,7 @@ class Frequency(str, Enum):
         return float(mapping.get(self, 1.0))
 
     def to_annual_multiplier(self) -> float:
+        """Return a factor for converting this frequency to an annual value."""
         mapping: dict[Frequency, float] = {
             Frequency.ONE_TIME: 0.0,
             Frequency.DAILY: 365,

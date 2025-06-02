@@ -9,6 +9,7 @@ from wealth.models.risk import RiskType, Risk
 fake = Faker()
 
 def generate_mock_allocation(user_id: str) -> Allocation:
+    """Create a randomized ``Allocation`` instance for testing."""
     allocation_type = choice(list(AllocationType))
     is_fixed = allocation_type == AllocationType.FIXED
     amount = round(uniform(50, 2000), 2) if is_fixed else None
@@ -39,6 +40,7 @@ def generate_mock_allocation(user_id: str) -> Allocation:
     )
 
 def generate_mock_allocation_list(user_id: str, count: int = 3) -> List[Allocation]:
+    """Return a list of mocked allocations."""
     return [generate_mock_allocation(user_id) for _ in range(count)]
 
 # 🧪 Standalone test

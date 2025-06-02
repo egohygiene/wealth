@@ -6,6 +6,7 @@ from wealth.models.allocation import Allocation, AllocationType
 from wealth.models.risk import Risk, RiskType
 
 def create_default_allocations(finance: Finance) -> list[Allocation]:
+    """Return a list of example ``Allocation`` records for the given finance."""
     # 2. Create the AAA Membership Allocation
     aaa_allocation = Allocation(
         uuid=str(uuid4()),

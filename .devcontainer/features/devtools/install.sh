@@ -3,6 +3,17 @@
 
 set -euo pipefail
 
+declare -A KNOWN_PLUGINS=(
+    [nodejs]=node
+    [python]=python3
+    [poetry]=poetry
+    [pnpm]=pnpm
+    [ruby]=ruby
+    [go]=go
+    [java]=java
+    [rust]=rustc
+)
+
 # -----------------------------------------------------------------------------
 # Function: cmd::exists
 #
@@ -1172,6 +1183,120 @@ asdf::install() {
     asdf::verify
 }
 
+has_asdf_plugin() {
+    grep -q "^$1\$" < <(asdf plugin list 2>/dev/null)
+}
+
+install_asdf_plugin() {
+    local plugin_name=$1
+
+    if ! has_asdf_plugin "$plugin_name"; then
+        log "📥 Adding plugin: $plugin_name"
+        if ! asdf plugin add "$plugin_name"; then
+            log "❌ Failed to add plugin: $plugin_name"
+            return 1
+        fi
+        log "✅ Plugin added: $plugin_name"
+    else
+        log "🔁 Plugin already exists: $plugin_name"
+    fi
+}
+
+sort_plugins_by_known_plugins() {
+    local -n input_plugins=$1
+    local -a sorted_plugins=()
+
+    # First: install all plugins from KNOWN_PLUGINS in order of declaration
+    for plugin in "${!KNOWN_PLUGINS[@]}"; do
+        for i in "${!input_plugins[@]}"; do
+            if [[ "${input_plugins[$i]}" == "$plugin" ]]; then
+                sorted_plugins+=("${input_plugins[$i]}")
+                unset 'input_plugins[i]'
+            fi
+        done
+    done
+
+    # Then: install remaining unknown plugins (alphabetically)
+    for plugin in "${input_plugins[@]}"; do
+        sorted_plugins+=("$plugin")
+    done
+
+    input_plugins=("${sorted_plugins[@]}")
+}
+
+install_asdf_plugins() {
+    log "🔍 Gathering plugins from .tool-versions files..."
+
+    local tool_files
+    if git rev-parse --is-inside-work-tree &>/dev/null; then
+        mapfile -t tool_files < <(
+            git ls-files --cached --others --exclude-standard '*.tool-versions' |
+                while read -r f; do realpath "$f"; done
+        )
+    else
+        mapfile -t tool_files < <(
+            find . -type f -name ".tool-versions" -not -path "*/.*/*" |
+                while read -r f; do realpath "$f"; done
+        )
+    fi
+
+    if [[ ${#tool_files[@]} -eq 0 ]]; then
+        log "⚠️ No .tool-versions files found."
+        return
+    fi
+    log "📁 Found ${#tool_files[@]} .tool-versions files."
+
+    for file in "${tool_files[@]}"; do
+        log "📄 Processing .tool-versions file: $file"
+
+        local dir
+        dir="$(dirname "$file")"
+
+        pushd "$dir" >/dev/null
+        log "📍 Moved into: $(pwd) to install dependencies from $file"
+
+        local all_plugins=()
+        local seen=()
+
+        while IFS= read -r line || [[ -n "$line" ]]; do
+            [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+
+            local plugin
+            plugin=$(awk '{print $1}' <<<"$line")
+
+            if [[ ! " ${seen[*]} " =~ " $plugin " ]]; then
+                seen+=("$plugin")
+                all_plugins+=("$plugin")
+            fi
+        done <"$file"
+        log "🔧 Found plugins: ${all_plugins[*]}"
+
+        sort_plugins_by_known_plugins all_plugins
+        log "🔧 Sorted plugins: ${all_plugins[*]}"
+
+        for plugin in "${all_plugins[@]}"; do
+            install_asdf_plugin "$plugin"
+        done
+
+        log "✅ All plugins installed from $file"
+
+        # Install dependencies now that plugins are installed
+        for plugin in "${all_plugins[@]}"; do
+            local version
+            version=$(awk -v plugin="$plugin" '$1 == plugin {print $2}' "$file")
+            if [[ -n "$version" ]]; then
+                log "📦 Installing $plugin version: $version"
+                asdf install "$plugin" "$version"
+                log "✅ Installed $plugin version: $version"
+            else
+                log "⚠️ No version specified for $plugin in $file"
+            fi
+        done
+
+        popd >/dev/null
+    done
+}
+
 # -----------------------------------------------------------------------------
 # Function: taskfile::version
 #
@@ -1286,6 +1411,7 @@ install::taskfile() {
 install() {
     log "🔧 Installing development tools..."
     install::asdf
+    install_asdf_plugins
     install::taskfile
     log::success "🔧 Development tools installation complete."
 }

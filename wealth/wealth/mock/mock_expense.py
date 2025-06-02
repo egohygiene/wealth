@@ -8,6 +8,7 @@ from wealth.models.expense import Expense, ExpenseCategory, ExpenseFrequency
 fake = Faker()
 
 def generate_mock_expense(user_id: str) -> Expense:
+    """Generate a random ``Expense`` for a user."""
     category = choice(list(ExpenseCategory))
     frequency = choice(list(ExpenseFrequency))
     vendor = fake.company()
@@ -28,6 +29,7 @@ def generate_mock_expense(user_id: str) -> Expense:
     )
 
 def generate_mock_expense_list(user_id: str, count: int = 5) -> List[Expense]:
+    """Return a list of mocked expenses."""
     return [generate_mock_expense(user_id) for _ in range(count)]
 
 # 🧪 Standalone test

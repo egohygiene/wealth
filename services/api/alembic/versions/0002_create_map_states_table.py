@@ -17,6 +17,7 @@ depends_on = None
 
 
 def upgrade() -> None:
+    """Create the ``map_states`` table."""
     op.create_table(
         MAP_STATES_TABLE,
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -39,4 +40,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Drop the ``map_states`` table."""
     op.drop_table(MAP_STATES_TABLE)

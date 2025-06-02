@@ -8,6 +8,7 @@ from wealth.models.income import Income, IncomeType, IncomeFrequency
 fake = Faker()
 
 def generate_mock_income(user_id: str) -> Income:
+    """Generate a random ``Income`` entry."""
     income_type = choice(list(IncomeType))
     frequency = choice(list(IncomeFrequency))
     source_name = fake.company()
@@ -25,6 +26,7 @@ def generate_mock_income(user_id: str) -> Income:
     )
 
 def generate_mock_income_list(user_id: str, count: int = 2) -> List[Income]:
+    """Return a list of mocked income streams."""
     return [generate_mock_income(user_id) for _ in range(count)]
 
 # 🧪 Standalone test

@@ -16,6 +16,7 @@ depends_on = None
 
 
 def upgrade() -> None:
+    """Create the initial ``users`` and ``messages`` tables."""
     op.create_table(
         USERS_TABLE,
         sa.Column("id", sa.String(), primary_key=True),
@@ -39,5 +40,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Drop the ``messages`` and ``users`` tables."""
     op.drop_table(MESSAGES_TABLE)
     op.drop_table(USERS_TABLE)

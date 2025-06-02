@@ -11,9 +11,11 @@ class Portfolio(Wealth):
     notes: Optional[str] = None
 
     def total_value(self) -> float:
+        """Return the combined current value of all investments."""
         return sum(inv.current_value for inv in self.investments)
 
     def allocation_breakdown(self) -> Dict[str, float]:
+        """Return investment allocation percentages grouped by asset type."""
         total = self.total_value()
         breakdown = {}
         for inv in self.investments:
@@ -24,7 +26,9 @@ class Portfolio(Wealth):
         } if total else {}
 
     def find_high_risk_assets(self) -> List[Investment]:
+        """List investments flagged as high or speculative risk."""
         return [inv for inv in self.investments if inv.risk_level in ("high", "speculative")]
 
     def get_platforms(self) -> List[str]:
+        """Return a unique list of investment platform names."""
         return list({inv.platform for inv in self.investments if inv.platform})

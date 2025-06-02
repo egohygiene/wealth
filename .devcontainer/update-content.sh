@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 init() {
-
-    ASDF_VERSION="v0.16.7"
     TASKFILE_VERSION="latest"
 
     declare -A KNOWN_PLUGINS=(
@@ -15,15 +13,6 @@ init() {
         [java]=java
         [rust]=rustc
     )
-
-    # Parse command-line arguments
-    for arg in "$@"; do
-        case "$arg" in
-        --local) USE_LOCAL=true ;;
-        --fresh) FRESH_INSTALL=true ;;
-        *) echo "❌ Unknown argument: $arg" && exit 1 ;;
-        esac
-    done
 
     # Set up environment variables based on arguments
     if [[ "$USE_LOCAL" == true ]]; then

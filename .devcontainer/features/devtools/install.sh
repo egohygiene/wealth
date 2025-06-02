@@ -1052,11 +1052,12 @@ taskfile::version() {
 }
 
 taskfile::home() {
-    echo "${TASKFILE_HOME_DIR:-/usr/local/bin}"
+    echo "${TASKFILE_HOME_DIR:-"$HOME/.taskfile"}"
 }
 
 taskfile::verify() {
-    local binary_path="$(taskfile::home)/task"
+    local binary_path
+    binary_path="$(taskfile::home)/task"
     if [[ -x "$binary_path" ]]; then
         local version
         version="$("$binary_path" --version 2>/dev/null || "$binary_path" -v 2>/dev/null || echo "Version info not available")"

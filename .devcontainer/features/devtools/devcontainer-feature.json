@@ -29,9 +29,13 @@
     },
     "containerEnv": {
         "ASDF_DIR": "/home/vscode/.asdf",
+        "ASDF_DATA_DIR": "/home/vscode/.asdf/data",
+        "ASDF_SHIMS_DIR": "/home/vscode/.asdf/data/shims",
+        // "ASDF_CONFIG_FILE": "/home/vscode/.asdf/asdfrc",
         "TASKFILE_HOME_DIR": "/home/vscode/.taskfile",
-        "PATH": "/home/vscode/.asdf/shims:/home/vscode/.asdf/bin:/home/vscode/.taskfile:${PATH}"
+        "PATH": "/home/vscode/.asdf/data/shims:/home/vscode/.asdf/bin:/home/vscode/.taskfile:${PATH}"
     },
+    "mounts": [],
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils",
         "ghcr.io/devcontainers/features/docker-in-docker"

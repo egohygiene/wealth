@@ -14,33 +14,6 @@ init() {
         [rust]=rustc
     )
 
-    # Set up environment variables based on arguments
-    if [[ "$USE_LOCAL" == true ]]; then
-        export ASDF_DIR="${ROOT_DIR}/.cache/asdf"
-        export ASDF_DATA_DIR="${ASDF_DIR}/data"
-        export ASDF_CONFIG_FILE="${ROOT_DIR}/.asdfrc"
-        export ASDF_SHIMS_DIR="${ASDF_DATA_DIR}/shims"
-        export TASKFILE_HOME_DIR="${ROOT_DIR}/.cache/taskfile"
-        export PATH="${ASDF_DIR}/bin:${ASDF_SHIMS_DIR}:${TASKFILE_HOME_DIR}:${PATH}"
-
-        if [[ "$FRESH_INSTALL" == true ]]; then
-            log "🧼 Fresh install requested — deleting .cache/"
-            rm -rf "${ROOT_DIR}/.cache"
-        fi
-    else
-        if [[ "$FRESH_INSTALL" == true ]]; then
-            log "⚠️  Ignoring --fresh: only valid with --local"
-            FRESH_INSTALL=false
-        fi
-
-        export ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
-        export ASDF_DATA_DIR="${ASDF_DATA_DIR:-$ASDF_DIR/data}"
-        export ASDF_CONFIG_FILE="${ASDF_CONFIG_FILE:-$ASDF_DIR/.asdfrc}"
-        export ASDF_SHIMS_DIR="${ASDF_SHIMS_DIR:-$ASDF_DATA_DIR/shims}"
-        export TASKFILE_HOME_DIR="${TASKFILE_HOME_DIR:-/usr/local/bin}"
-    fi
-}
-
 verify_installation() {
     local cmd=$1
     local name=${2:-$cmd}
@@ -215,58 +188,11 @@ install_asdf_plugins() {
     done
 }
 
-ensure_python_build_deps() {
-    log "🔧 Checking for required Python build dependencies..."
-
-    # Required packages
-    local packages=(
-        build-essential
-        libbz2-dev
-        libncursesw5-dev
-        libreadline-dev
-        libffi-dev
-        libsqlite3-dev
-        liblzma-dev
-        zlib1g-dev
-        tk-dev
-        libssl-dev
-        curl
-        git
-        ca-certificates
-        xz-utils
-    )
-
-    # Determine which ones are missing
-    local missing=()
-    for pkg in "${packages[@]}"; do
-        if ! dpkg -s "$pkg" &>/dev/null; then
-            missing+=("$pkg")
-        fi
-    done
-
-    # Install only if needed
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        log "📦 Installing missing packages: ${missing[*]}"
-        sudo apt-get update && sudo apt-get install --yes "${missing[@]}"
-    else
-        log "✅ All required packages already installed."
-    fi
-}
-
 main() {
     init "$@"
-
-    if is_debian; then
-        log "🧠 Detected Debian-based system"
-        ensure_python_build_deps
-    else
-        log "🚫 Not a Debian-based system — skipping system package setup"
-    fi
-
     install_asdf
     install_asdf_plugins
     install_taskfile
-
 }
 
 main "$@"

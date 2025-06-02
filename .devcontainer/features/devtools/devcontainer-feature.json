@@ -5,39 +5,15 @@
     "documentationURL": "",
     "description": "Installs devtools for the project.",
     "options": {
-        "version": {
+        "asdf_version": {
             "type": "string",
-            "proposals": [
-                "latest",
-                "2.11"
-            ],
             "default": "latest",
-            "description": "Version of Nix to install."
+            "description": "Version of asdf to install."
         },
-        "multiUser": {
-            "type": "boolean",
-            "default": true,
-            "description": "Perform a multi-user install (instead of single user)"
-        },
-        "packages": {
+        "taskfile_version": {
             "type": "string",
-            "default": "",
-            "description": "Optional comma separated list of Nix packages to install in profile."
-        },
-        "useAttributePath": {
-            "type": "boolean",
-            "default": false,
-            "description": "Enable this option to use exact attribute path of the package in the Nixpkgs repository, aligning with the nix-env -iA command."
-        },
-        "flakeUri": {
-            "type": "string",
-            "default": "",
-            "description": "Optional URI to a Nix Flake to install in profile."
-        },
-        "extraNixConfig": {
-            "type": "string",
-            "default": "",
-            "description": "Optional comma separated list of extra lines to add to /etc/nix/nix.conf."
+            "default": "latest",
+            "description": "Version of Taskfile binary to install."
         }
     },
     "customizations": {
@@ -45,17 +21,13 @@
             "settings": {
                 "github.copilot.chat.codeGeneration.instructions": [
                     {
-                        "text": "This dev container includes an up-to-date version of Git, built from source as needed, pre-installed and available on the `PATH`."
+                        "text": "This dev container has asdf and Taskfile pre-installed. Use asdf to manage runtime versions and the `task` command for automation." 
                     }
                 ]
-                // "python.defaultInterpreterPath": "/usr/local/python/current/bin/python"
             }
         }
     },
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
-    ],
-    "containerEnv": {
-        "PATH": "/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin:${PATH}"
-    }
+    ]
 }

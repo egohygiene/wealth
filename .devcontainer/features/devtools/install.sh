@@ -1085,6 +1085,49 @@ asdf::version() {
 }
 
 # -----------------------------------------------------------------------------
+# Function: asdf::home
+#
+# Description:
+#   Echoes the directory where the asdf binary will be installed.
+#   Defaults to `$HOME/.asdf` unless `ASDF_DIR` is specified.
+#
+# Usage:
+#   binary_dir=$(asdf::home)
+#
+# Returns:
+#   Prints the installation directory path.
+# -----------------------------------------------------------------------------
+asdf::home() {
+    echo "${ASDF_DIR:-"$HOME/.asdf"}"
+}
+
+# -----------------------------------------------------------------------------
+# Function: asdf::verify
+#
+# Description:
+#   Validates the asdf installation by checking if the binary exists and
+#   printing its version. Returns an error if the binary cannot be found.
+#
+# Usage:
+#   asdf::verify
+#
+# Returns:
+#   Exit status 0 if installed, non-zero otherwise.
+# -----------------------------------------------------------------------------
+asdf::verify() {
+    local binary_path
+    binary_path="$(asdf::home)/bin/asdf"
+    if [[ -x "$binary_path" ]]; then
+        local version
+        version="$("$binary_path" --version 2>/dev/null || echo "Version info not available")"
+        log::success "✅ ASDF installed at $binary_path: $version"
+    else
+        log::error "❌ ASDF not found at $binary_path"
+        return 1
+    fi
+}
+
+# -----------------------------------------------------------------------------
 # Function: taskfile::version
 #
 # Description:

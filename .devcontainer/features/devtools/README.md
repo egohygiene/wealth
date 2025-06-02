@@ -1,32 +1,23 @@
-
 # devtools
 
-Install asdf version 
+Installs [asdf](https://asdf-vm.com/) and the [Taskfile](https://taskfile.dev/#/) binary inside the dev container.
 
 ## Example Usage
 
 ```json
-    "./features/devtools": {
-        "asdf_version": "latest"
-    }
+"./features/devtools": {
+  "asdf_version": "latest",
+  "taskfile_version": "latest"
+}
 ```
 
 ## Options
 
-| Options Id | Description | Type | Default Value |
-|-----|-----|-----|-----|
-| asdf_version | Select or enter a Git version. | string | os-provided |
-| asdf_version | Install from PPA if available (only supported for Ubuntu distributions) | boolean | true |
-
-
+| Option Id | Description | Type | Default |
+|-----------|-------------|------|---------|
+| `asdf_version` | Version of asdf to install. | string | `latest` |
+| `taskfile_version` | Version of Taskfile binary to install. | string | `latest` |
 
 ## OS Support
 
-This Feature should work on recent versions of Alpine, Debian/Ubuntu, RedHat Enterprise Linux, Fedora, Alma, and RockyLinux distributions with the `apk`, `apt`, `yum`, `dnf`, or `microdnf` package manager installed.
-
-`bash` is required to execute the `install.sh` script.
-
-
----
-
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/devcontainers/features/blob/main/src/git/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+The feature should work on most Debian/Ubuntu, RedHat, Fedora and Alpine based images. `bash` is required to execute the install script.

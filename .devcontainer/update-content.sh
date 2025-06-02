@@ -215,21 +215,6 @@ install_asdf_plugins() {
     done
 }
 
-install_taskfile() {
-    local binary_path="${TASKFILE_HOME_DIR}/task"
-
-    if [[ -x "$binary_path" ]]; then
-        log "✅ Taskfile already installed at $binary_path"
-        return
-    fi
-
-    log "📥 Installing Taskfile..."
-    mkdir -p "$TASKFILE_HOME_DIR"
-    curl --fail --silent --show-error https://taskfile.dev/install.sh | sh -s -- -d -b "$TASKFILE_HOME_DIR"
-
-    verify_installation "task"
-}
-
 ensure_python_build_deps() {
     log "🔧 Checking for required Python build dependencies..."
 

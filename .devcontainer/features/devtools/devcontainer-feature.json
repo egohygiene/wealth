@@ -21,13 +21,19 @@
             "settings": {
                 "github.copilot.chat.codeGeneration.instructions": [
                     {
-                        "text": "This dev container has asdf and Taskfile pre-installed. Use asdf to manage runtime versions and the `task` command for automation." 
+                        "text": "This dev container has asdf and Taskfile pre-installed. Use asdf to manage runtime versions and the `task` command for automation."
                     }
                 ]
             }
         }
     },
+    "containerEnv": {
+        "ASDF_DIR": "/home/vscode/.asdf",
+        "TASKFILE_HOME_DIR": "/home/vscode/.taskfile",
+        "PATH": "/home/vscode/.asdf/shims:/home/vscode/.asdf/bin:/home/vscode/.taskfile:${PATH}"
+    },
     "installsAfter": [
-        "ghcr.io/devcontainers/features/common-utils"
+        "ghcr.io/devcontainers/features/common-utils",
+        "ghcr.io/devcontainers/features/docker-in-docker"
     ]
 }

@@ -1,5 +1,4 @@
 services:
-
   dev:
     container_name: ${COMPOSE_PROJECT_NAME:-devcontainer}-dev
     hostname: ${COMPOSE_PROJECT_NAME:-devcontainer}-dev

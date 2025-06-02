@@ -30,9 +30,11 @@ class FinanceSummary(BaseModel):
     allocation_count: int
 
     def to_dict(self):
+        """Return a ``dict`` representation of the summary."""
         return self.model_dump()
 
     def to_json(self, indent: Optional[int] = 4):
+        """Serialize the summary to a JSON string."""
         return self.model_dump_json(indent=indent)
 
 
@@ -61,14 +63,17 @@ class Finance(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     def total_net_worth(self) -> float:
+        """Calculate assets minus liabilities."""
         assets = sum(inv.current_value for inv in self.investments)
         liabilities = sum(debt.balance for debt in self.debts)
         return assets - liabilities
 
     def to_dict(self):
+        """Return a ``dict`` representation of the finance object."""
         return self.model_dump()
 
     def to_json(self, indent: Optional[int] = 4):
+        """Serialize the finance object to JSON."""
         return self.model_dump_json(indent=indent)
 
     def add_allocation(self, allocation: Allocation):
@@ -84,6 +89,7 @@ class Finance(BaseModel):
 
     @classmethod
     def default(cls, user_id: str, notes: Optional[str] = None) -> Finance:
+        """Create a ``Finance`` instance populated with default data."""
         return cls(
             user_id=user_id,
             roles=[
@@ -117,6 +123,7 @@ class Finance(BaseModel):
         show: bool = True,
         save_path: Optional[str] = None
     ):
+        """Display or save a pie chart of allocation data."""
         import plotly.express as px  # type: ignore
         from pathlib import Path
 

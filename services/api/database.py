@@ -8,6 +8,7 @@ log = structlog.get_logger(__name__)
 
 
 def get_database_url() -> str:
+    """Construct the database connection URL from configuration."""
     cfg = get_config()
     return (
         f"postgresql+asyncpg://{cfg.db_user}:{cfg.db_password}@"
@@ -21,5 +22,6 @@ async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def get_session() -> AsyncSession:
+    """Yield an ``AsyncSession`` instance scoped to a single request."""
     async with async_session() as session:
         yield session

@@ -9,6 +9,7 @@ from wealth.models.risk import RiskType, Risk
 fake = Faker()
 
 def generate_mock_debt(user_id: str) -> Debt:
+    """Create a randomized ``Debt`` entry."""
     debt_type = choice(list(DebtType))
     risk_level = choice(list(RiskType))
     status = choice(list(DebtStatus))
@@ -45,6 +46,7 @@ def generate_mock_debt(user_id: str) -> Debt:
     )
 
 def generate_mock_debt_list(user_id: str, count: int = 3) -> List[Debt]:
+    """Return a list of mocked debts."""
     return [generate_mock_debt(user_id) for _ in range(count)]
 
 # 🧪 Standalone test

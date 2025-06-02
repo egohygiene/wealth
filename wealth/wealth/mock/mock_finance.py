@@ -13,6 +13,7 @@ from wealth.mock.mock_portfolio import generate_mock_portfolio_list
 from wealth.mock.mock_services import generate_mock_service_list
 
 def generate_mock_finance(user_id: str | None = None) -> Finance:
+    """Assemble a ``Finance`` object populated with mock data."""
     user_id = user_id or str(uuid4())
 
     return Finance(

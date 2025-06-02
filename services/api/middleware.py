@@ -17,6 +17,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        """Bind request context vars, execute the call chain, and unbind."""
         request_id = str(uuid.uuid4())
         user = getattr(request.state, "user", None)
         structlog.contextvars.bind_contextvars(

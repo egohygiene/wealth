@@ -50,8 +50,34 @@ has_asdf_plugin() {
     grep -q "^$1\$" < <(asdf plugin list 2>/dev/null)
 }
 
+# Path to the asdf installation directory
+asdf::home() {
+    echo "${ASDF_DIR:-"$HOME/.asdf"}"
+}
+
+# Verify that asdf is installed and print its version
+asdf::verify() {
+    local binary_path
+    binary_path="$(asdf::home)/bin/asdf"
+    if [[ -x "$binary_path" ]]; then
+        local version
+        version="$("$binary_path" --version 2>/dev/null || echo "Version info not available")"
+        log "✅ ASDF installed at $binary_path: $version"
+    else
+        log "❌ ASDF not found at $binary_path"
+        return 1
+    fi
+}
+
 install_asdf() {
+    local repo_url="https://github.com/asdf-vm/asdf"
     local binary_path="${ASDF_DIR}/bin/asdf"
+    local version="${ASDF_VERSION:-latest}"
+
+    if [[ "$version" == "latest" ]]; then
+        log "🔍 Fetching latest ASDF version..."
+        version="$(curl --fail --silent --show-error --location -o /dev/null -w '%{url_effective}' "${repo_url}/releases/latest" | sed 's#.*/tag/##')"
+    fi
 
     # If it exists, try to run it
     if [[ -x "$binary_path" ]]; then
@@ -64,9 +90,9 @@ install_asdf() {
         fi
     fi
 
-    log "📥 Downloading asdf $ASDF_VERSION..."
+    log "📥 Downloading asdf $version..."
     curl --fail --silent --show-error --location \
-        "https://github.com/asdf-vm/asdf/releases/download/${ASDF_VERSION}/asdf-${ASDF_VERSION}-${OS}-${ARCH}.tar.gz" \
+        "${repo_url}/releases/download/${version}/asdf-${version}-${OS}-${ARCH}.tar.gz" \
         --output asdf.tar.gz
 
     tar -xzf asdf.tar.gz
@@ -76,6 +102,7 @@ install_asdf() {
     rm -f asdf.tar.gz
 
     log "✅ ASDF installed to $binary_path"
+    asdf::verify
 }
 
 install_asdf_plugin() {

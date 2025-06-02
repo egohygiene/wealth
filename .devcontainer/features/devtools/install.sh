@@ -1128,6 +1128,51 @@ asdf::verify() {
 }
 
 # -----------------------------------------------------------------------------
+# Function: asdf::install
+#
+# Description:
+#   Downloads and installs the asdf binary. If the current version is set to
+#   "latest", the function will resolve the latest release from GitHub.
+#
+# Usage:
+#   asdf::install
+# -----------------------------------------------------------------------------
+asdf::install() {
+    local repo_url="https://github.com/asdf-vm/asdf"
+    local binary_path="$(asdf::home)/bin/asdf"
+    local version="$(asdf::version)"
+
+    if [[ "$version" == "latest" ]]; then
+        log::info "🔍 Fetching latest ASDF version..."
+        version="$(curl --fail --silent --show-error --location -o /dev/null -w '%{url_effective}' "${repo_url}/releases/latest" | sed 's#.*/tag/##')"
+    fi
+
+    if [[ -x "$binary_path" ]]; then
+        if "$binary_path" --version &>/dev/null; then
+            log::success "✅ ASDF already installed at $binary_path"
+            return
+        else
+            log::warn "⚠️ Detected existing ASDF, but it failed to execute. Reinstalling..."
+            rm -rf "$(asdf::home)"
+        fi
+    fi
+
+    log::info "📥 Downloading asdf $version..."
+    curl --fail --silent --show-error --location \
+        "${repo_url}/releases/download/${version}/asdf-${version}-${OS}-${ARCH}.tar.gz" \
+        --output asdf.tar.gz
+
+    tar -xzf asdf.tar.gz
+    mkdir -p "$(dirname "$binary_path")"
+    chmod +x asdf
+    mv asdf "$binary_path"
+    rm -f asdf.tar.gz
+
+    log::success "✅ ASDF installed to $binary_path"
+    asdf::verify
+}
+
+# -----------------------------------------------------------------------------
 # Function: taskfile::version
 #
 # Description:
@@ -1200,7 +1245,8 @@ taskfile::verify() {
 #   install::asdf
 # -----------------------------------------------------------------------------
 install::asdf() {
-    log "📥 Installing ASDF version manager '$(asdf::version)'..."
+    log::info "📥 Installing ASDF version manager '$(asdf::version)'..."
+    asdf::install
 }
 
 # -----------------------------------------------------------------------------

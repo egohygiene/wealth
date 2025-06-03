@@ -28,16 +28,15 @@
         },
         "./features/devtools": {
             "asdf_version": "latest"
-        }
+        },
+        "./features/docker-proxy": {}
     },
-    "postCreateCommand": "python3 /workspace/.devcontainer/post_create.py && nix develop /workspace --command true",
+    "postCreateCommand": "python3 /usr/local/share/docker-proxy-setup.py && nix develop /workspace --command true",
     "mounts": [
         "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
         "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
     ],
-    "containerEnv": {
-        "DOCKER_DNS": "8.8.8.8"
-    },
+    "containerEnv": {},
     "remoteUser": "vscode",
     "customizations": {
         "vscode": {

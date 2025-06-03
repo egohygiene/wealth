@@ -114,8 +114,6 @@ RUN mkdir -p /devtools
 # Set working directory
 WORKDIR /workspace
 
-# Copy the proxy setup script
-COPY .devcontainer/post_create.py /workspace/.devcontainer/post_create.py
 
 ENV NIX_CONF_DIR=/devtools/nix
 

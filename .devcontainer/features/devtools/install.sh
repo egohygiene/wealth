@@ -12,6 +12,11 @@ declare -A KNOWN_PLUGINS=(
     [go]=go
     [java]=java
     [rust]=rustc
+    [yarn]=yarn
+    [terraform]=terraform
+    [direnv]=direnv
+    [awscli]=aws
+    [kubectl]=kubectl
 )
 
 # -----------------------------------------------------------------------------

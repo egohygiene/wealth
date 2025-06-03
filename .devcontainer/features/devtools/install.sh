@@ -1113,6 +1113,23 @@ asdf::home() {
 }
 
 # -----------------------------------------------------------------------------
+# Function: asdf::data_dir
+#
+# Description:
+#   Echoes the directory where asdf stores shims and other data files.
+#   Defaults to "$(asdf::home)/data" unless `ASDF_DATA_DIR` is specified.
+#
+# Usage:
+#   data_dir=$(asdf::data_dir)
+#
+# Returns:
+#   Prints the data directory path.
+# -----------------------------------------------------------------------------
+asdf::data_dir() {
+    echo "${ASDF_DATA_DIR:-"$(asdf::home)/data"}"
+}
+
+# -----------------------------------------------------------------------------
 # Function: asdf::verify
 #
 # Description:
@@ -1152,6 +1169,10 @@ asdf::install() {
     local repo_url="https://github.com/asdf-vm/asdf"
     local binary_path="$(asdf::home)/bin/asdf"
     local version="$(asdf::version)"
+
+    # Ensure required directories exist and are owned by the vscode user
+    mkdir -p "$(asdf::home)" "$(asdf::data_dir)"
+    chown vscode:vscode "$(asdf::home)" "$(asdf::data_dir)"
 
     if [[ "$version" == "latest" ]]; then
         log::info "🔍 Fetching latest ASDF version..."

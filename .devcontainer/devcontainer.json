@@ -29,7 +29,8 @@
         "./features/devtools": {
             "asdf_version": "latest"
         },
-        "./features/docker-proxy": {}
+        "./features/docker-proxy": {},
+        "./features/mega-linter": {}
     },
     "postCreateCommand": "python3 /usr/local/share/docker-proxy-setup.py && nix develop /workspace --command true",
     "mounts": [

@@ -114,5 +114,6 @@ nix develop
 ```
 
 The dev container is configured to install Nix and use this flake, providing a
-consistent setup across machines.
+consistent setup across machines. It also installs MegaLinter so you can run
+`task lint` directly inside the container.
 

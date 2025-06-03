@@ -119,5 +119,8 @@ COPY .devcontainer/post_create.py /workspace/.devcontainer/post_create.py
 
 ENV NIX_CONF_DIR=/devtools/nix
 
+# Ensure the Nix configuration directory exists
+RUN mkdir -p ${NIX_CONF_DIR}
+
 # Copy the Nix configuration file
 COPY --chown=vscode:vscode .devcontainer/nix/nix.conf ${NIX_CONF_DIR}/nix.conf

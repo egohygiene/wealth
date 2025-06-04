@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install poetry-core so pip can process pyproject files
-RUN pip install --no-cache-dir poetry-core
+RUN pip install --no-cache-dir poetry-core==2.1.2
 
 # Copy Python package and install it
 COPY wealth/pyproject.toml wealth/poetry.toml /app/wealth/

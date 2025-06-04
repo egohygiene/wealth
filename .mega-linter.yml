@@ -1,3 +1,4 @@
+---
 PRESET: linters-without-autofix
 
 ENABLE_LINTERS:

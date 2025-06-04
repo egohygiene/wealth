@@ -2,7 +2,9 @@ name: MegaLinter
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
   pull_request:
 
 jobs:
@@ -10,7 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: MegaLinter
-        uses: oxsecurity/megalinter@v7
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Run MegaLinter
+        run: npx mega-linter-runner --install-tools
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

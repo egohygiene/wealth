@@ -16,6 +16,6 @@ jobs:
         with:
           node-version: '20'
       - name: Run MegaLinter
-        run: npx mega-linter-runner --no-banner
+        run: npx mega-linter-runner --path .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,6 @@
 # devtools
 
-Installs [asdf](https://asdf-vm.com/) and the [Taskfile](https://taskfile.dev/#/) binary inside the dev container.
+Installs [asdf](https://asdf-vm.com/), the [Taskfile](https://taskfile.dev/#/) binary, and the [MegaLinter Runner](https://github.com/oxsecurity/megalinter) inside the dev container.
 
 ## Example Usage
 

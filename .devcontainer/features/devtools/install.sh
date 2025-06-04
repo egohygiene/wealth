@@ -1428,6 +1428,23 @@ install::taskfile() {
 }
 
 # -----------------------------------------------------------------------------
+# Function: install::mega_linter
+#
+# Description:
+#   Installs the MegaLinter Runner globally using npm if it is not already
+#   present in the PATH.
+# -----------------------------------------------------------------------------
+install::mega_linter() {
+    if command -v mega-linter-runner >/dev/null 2>&1; then
+        log::success "✅ MegaLinter Runner already installed"
+        return
+    fi
+
+    log "📥 Installing MegaLinter Runner via npm..."
+    npm install -g mega-linter-runner
+}
+
+# -----------------------------------------------------------------------------
 # Function: install
 #
 # Description:
@@ -1439,6 +1456,7 @@ install() {
     install::asdf
     install_asdf_plugins
     install::taskfile
+    install::mega_linter
     log::success "🔧 Development tools installation complete."
 }
 

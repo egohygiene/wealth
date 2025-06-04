@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+  lint:
+    cmds:
+      - eslint "src/**/*.{ts,tsx}"
+  test:
+    cmds:
+      - vitest run

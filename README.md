@@ -33,14 +33,14 @@ The FastAPI service lives under `services/api`. It uses Keycloak for authenticat
 
 Set the following environment variables with your Google credentials:
 
-```
+```bash
 GOOGLE_CLIENT_ID=<client id>
 GOOGLE_CLIENT_SECRET=<client secret>
 ```
 
 Start the API for development with:
 
-```
+```bash
 uvicorn services.api.main:app --reload
 ```
 

@@ -4,9 +4,9 @@ tasks:
   lint:
     desc: Run MegaLinter without auto-fix
     cmds:
-      - mega-linter-runner --no-banner
+      - mega-linter-runner --path .
 
   lint:fix:
     desc: Run MegaLinter with auto-fix
     cmds:
-      - mega-linter-runner --fix --no-banner
+      - mega-linter-runner --path . --fix

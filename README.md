@@ -117,3 +117,11 @@ The dev container is configured to install Nix and use this flake, providing a
 consistent setup across machines. The devtools feature installs MegaLinter so
 you can run `task lint` directly inside the container.
 
+## Commit messages
+
+This repository uses [commitlint](https://commitlint.js.org/) to enforce the
+[Conventional Commits](https://www.conventionalcommits.org/) specification.
+After running `pnpm install` Husky installs a `commit-msg` hook that runs
+commitlint automatically. Make sure your commit messages follow the standard so
+the hook passes.
+

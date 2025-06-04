@@ -117,6 +117,18 @@ The dev container is configured to install Nix and use this flake, providing a
 consistent setup across machines. The devtools feature installs MegaLinter so
 you can run `task lint` directly inside the container.
 
+## Pre-commit hooks
+
+Fast checks run automatically via [pre-commit](https://pre-commit.com/). The dev
+container installs the tool and runs `pre-commit install` for you. If working
+outside the container make sure `pre-commit` is available and run:
+
+```bash
+pre-commit install
+```
+
+Hooks like Black and Prettier will then execute before each commit.
+
 ## Commit messages
 
 This repository uses [commitlint](https://commitlint.js.org/) to enforce the

@@ -13,14 +13,17 @@
           inherit system;
         };
       in {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.nodejs_20
-            pkgs.pnpm
-            pkgs.python312Full
-            pkgs.poetry
-            pkgs.git
-          ];
+          devShells.default = pkgs.mkShell {
+            buildInputs = [
+              pkgs.nodejs_20
+              pkgs.pnpm
+              pkgs.python312Full
+              pkgs.poetry
+              pkgs.git
+              pkgs.pre-commit
+              pkgs.black
+              pkgs.nodePackages.prettier
+            ];
 
           shellHook = ''
             echo "✅ dev shell ready (Node, Python, Poetry, PNPM)"

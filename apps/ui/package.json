@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.3",
-    "@react-keycloak/web": "^4.0.2",
+    "@react-keycloak/web": "^3.4.0",
     "keycloak-js": "^23.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

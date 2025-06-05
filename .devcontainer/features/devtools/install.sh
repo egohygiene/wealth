@@ -1148,14 +1148,15 @@ asdf::data_dir() {
 #   Exit status 0 if installed, non-zero otherwise.
 # -----------------------------------------------------------------------------
 asdf::verify() {
-    local binary_path
-    binary_path="$(asdf::home)/bin/asdf"
-    if [[ -x "$binary_path" ]]; then
-        local version
-        version="$("$binary_path" --version 2>/dev/null || echo "Version info not available")"
-        log::success "✅ ASDF installed at $binary_path: $version"
-    elif command -v asdf >/dev/null 2>&1; then
+    local binary_path=""
+
+    if command -v asdf >/dev/null 2>&1; then
         binary_path="$(command -v asdf)"
+    elif [[ -x "$(asdf::home)/bin/asdf" ]]; then
+        binary_path="$(asdf::home)/bin/asdf"
+    fi
+
+    if [[ -n "$binary_path" && -x "$binary_path" ]]; then
         local version
         version="$("$binary_path" --version 2>/dev/null || echo "Version info not available")"
         log::success "✅ ASDF available at $binary_path: $version"

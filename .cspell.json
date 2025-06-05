@@ -1,0 +1,27 @@
+{
+  "version": "0.2",
+  "words": [
+    "JSONLINT",
+    "SHFMT",
+    "tamasfe",
+    "ossdata",
+    "pgsql",
+    "bbenoist",
+    "mrmlnc",
+    "venv",
+    "pydantic",
+    "virtualenvs",
+    "Taskfile",
+    "unovis",
+    "Unovis",
+    "vitest",
+    "htdocs",
+    "postgis",
+    "wealthpass",
+    "keycloakpass",
+    "jdbc",
+    "uvicorn",
+    "Pydantic",
+    "pyproject"
+  ]
+}

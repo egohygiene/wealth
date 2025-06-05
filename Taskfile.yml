@@ -1,12 +1,18 @@
+---
 version: '3'
 
 tasks:
   lint:
     desc: Run MegaLinter without auto-fix
     cmds:
-      - mega-linter-runner --no-banner
+      - mega-linter-runner --path .
 
   lint:fix:
     desc: Run MegaLinter with auto-fix
     cmds:
-      - mega-linter-runner --fix --no-banner
+      - mega-linter-runner --path . --fix
+
+  secrets:
+    desc: Scan for secrets using gitleaks
+    cmds:
+      - gitleaks detect --source . --config=.gitleaks.toml --redact

@@ -3,7 +3,7 @@ FROM node:20-slim
 WORKDIR /app
 
 # Install pnpm package manager
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.11.1
 
 # Install dependencies
 COPY package.json ./

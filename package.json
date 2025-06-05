@@ -9,9 +9,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "version-packages": "changeset version",
     "release": "changeset publish",
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build",
+    "prepare": "husky install"
   },
   "devDependencies": {
-    "@changesets/cli": "^2"
+    "@changesets/cli": "^2",
+    "@commitlint/cli": "^17.7.2",
+    "@commitlint/config-conventional": "^17.7.0",
+    "husky": "^9.0.11"
   }
 }

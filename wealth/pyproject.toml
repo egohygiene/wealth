@@ -5,11 +5,12 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "wealth"
 version = "0.1.0"
-description = ""
+description = "Personal finance models and utilities"
 authors = ["Alan Szmyt <szmyty@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "wealth" }]
+include = [{ path = "wealth/schemas/wealth.schema.json" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -29,6 +30,8 @@ alembic = "^1.13.1"
 structlog = "^24.1.0"
 python-json-logger = "^2.0.7"
 loguru = "^0.7.2"
+sqlmodel = "^0.0.14"
+jsonschema = "^4.21.1"
 
 [tool.poetry.scripts]
 wealth = "wealth.cli:cli"

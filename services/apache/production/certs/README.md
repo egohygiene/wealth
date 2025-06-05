@@ -1,1 +1,3 @@
-Place SSL certificates here
+# Production certificates
+
+Place SSL certificates here.

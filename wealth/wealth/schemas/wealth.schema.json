@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Wealth Models",
+  "type": "object",
+  "definitions": {
+    "Wealth": {
+      "type": "object",
+      "properties": {
+        "uuid": {"type": "string"},
+        "user_id": {"type": "string"},
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "parent_id": {"type": "string"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+        "notes": {"type": "string"},
+        "is_active": {"type": "boolean"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
+      },
+      "required": ["uuid", "user_id", "name", "tags", "is_active", "created_at", "updated_at"]
+    },
+    "RiskType": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "speculative", "guaranteed"]
+    },
+    "RiskProfile": {
+      "type": "string",
+      "enum": ["conservative", "moderate", "balanced", "aggressive", "speculative"]
+    },
+    "Risk": {
+      "type": "object",
+      "properties": {
+        "uuid": {"type": "string"},
+        "name": {"type": "string"},
+        "score": {"type": "number"},
+        "level": {"$ref": "#/definitions/RiskType"},
+        "description": {"type": "string"},
+        "source_object_type": {"type": "string"},
+        "source_object_id": {"type": "string"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
+      },
+      "required": ["uuid", "name", "score", "level", "created_at", "updated_at"]
+    },
+    "Service": {
+      "type": "object",
+      "properties": {
+        "uuid": {"type": "string"},
+        "name": {"type": "string"},
+        "url": {"type": "string", "format": "uri"},
+        "logo_url": {"type": "string", "format": "uri"},
+        "provider": {"type": "string"},
+        "notes": {"type": "string"}
+      },
+      "required": ["uuid", "name"]
+    },
+    "AssetType": {
+      "type": "string",
+      "enum": [
+        "stock", "etf", "mutual_fund", "crypto", "reit", "bond", "option", "future",
+        "cash", "commodity", "collectible", "crowdfunding", "angel_investment",
+        "real_estate", "business_equity", "other"
+      ]
+    },
+    "Investment": {
+      "allOf": [
+        {"$ref": "#/definitions/Wealth"},
+        {
+          "type": "object",
+          "properties": {
+            "asset_type": {"$ref": "#/definitions/AssetType"},
+            "amount_invested": {"type": "number"},
+            "current_value": {"type": "number"},
+            "platform": {"type": "string"},
+            "risk_score": {"type": "number"},
+            "risk_level": {"$ref": "#/definitions/RiskType"},
+            "risk": {"$ref": "#/definitions/Risk"}
+          },
+          "required": ["asset_type", "amount_invested", "current_value", "risk_score", "risk_level"]
+        }
+      ]
+    },
+    "AllocationType": {
+      "type": "string",
+      "enum": ["fixed", "variable"]
+    },
+    "Allocation": {
+      "allOf": [
+        {"$ref": "#/definitions/Wealth"},
+        {
+          "type": "object",
+          "properties": {
+            "allocation_type": {"$ref": "#/definitions/AllocationType"},
+            "budget_amount": {"type": "number"},
+            "budget_percentage": {"type": "number"},
+            "savings_bucket": {"type": "string"},
+            "risk_score": {"type": "number"},
+            "risk_level": {"$ref": "#/definitions/RiskType"},
+            "risk": {"$ref": "#/definitions/Risk"},
+            "tags": {"type": "array", "items": {"type": "string"}},
+            "services": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Service"}
+            },
+            "active": {"type": "boolean"}
+          },
+          "required": ["allocation_type", "risk_score", "risk_level", "tags", "services", "active"]
+        }
+      ]
+    },
+    "ExpenseCategory": {
+      "type": "string",
+      "enum": [
+        "housing", "utilities", "groceries", "transportation", "healthcare",
+        "insurance", "entertainment", "subscriptions", "education", "childcare",
+        "pets", "charity", "personal_care", "gifts", "business", "taxes", "loans",
+        "debt_repayment", "investment", "other"
+      ]
+    },
+    "ExpenseFrequency": {
+      "type": "string",
+      "enum": [
+        "one_time", "daily", "weekly", "biweekly", "semimonthly", "monthly",
+        "bimonthly", "quarterly", "semiannually", "annually", "irregular"
+      ]
+    },
+    "Expense": {
+      "allOf": [
+        {"$ref": "#/definitions/Wealth"},
+        {
+          "type": "object",
+          "properties": {
+            "amount": {"type": "number"},
+            "date": {"type": "string", "format": "date-time"},
+            "category": {"$ref": "#/definitions/ExpenseCategory"},
+            "frequency": {"$ref": "#/definitions/ExpenseFrequency"},
+            "source_account": {"type": "string"}
+          },
+          "required": ["amount", "date", "category", "frequency", "source_account"]
+        }
+      ]
+    },
+    "IncomeType": {
+      "type": "string",
+      "enum": [
+        "active", "passive", "freelance", "business", "investment", "rental",
+        "platform", "crypto", "royalty", "retirement", "social_security", "stipend",
+        "disability", "child_support", "alimony", "windfall", "other"
+      ]
+    },
+    "IncomeFrequency": {
+      "type": "string",
+      "enum": [
+        "one_time", "daily", "weekly", "biweekly", "semimonthly", "monthly",
+        "bimonthly", "quarterly", "semiannually", "annually", "irregular"
+      ]
+    },
+    "Income": {
+      "allOf": [
+        {"$ref": "#/definitions/Wealth"},
+        {
+          "type": "object",
+          "properties": {
+            "source": {"type": "string"},
+            "amount": {"type": "number"},
+            "frequency": {"$ref": "#/definitions/IncomeFrequency"},
+            "type": {"$ref": "#/definitions/IncomeType"}
+          },
+          "required": ["source", "amount", "frequency", "type"]
+        }
+      ]
+    },
+    "DebtType": {
+      "type": "string",
+      "enum": [
+        "credit_card", "personal_loan", "student_loan", "auto_loan", "mortgage",
+        "medical", "business_loan", "line_of_credit", "buy_now_pay_later", "other"
+      ]
+    },
+    "DebtStatus": {
+      "type": "string",
+      "enum": ["open", "closed", "defaulted", "deferred", "paid_off"]
+    },
+    "Debt": {
+      "allOf": [
+        {"$ref": "#/definitions/Wealth"},
+        {
+          "type": "object",
+          "properties": {
+            "debt_type": {"$ref": "#/definitions/DebtType"},
+            "status": {"$ref": "#/definitions/DebtStatus"},
+            "balance": {"type": "number"},
+            "apr": {"type": "number"},
+            "min_payment": {"type": "number"},
+            "snowball_priority": {"type": "number"},
+            "risk_score": {"type": "number"},
+            "risk_level": {"$ref": "#/definitions/RiskType"},
+            "risk": {"$ref": "#/definitions/Risk"},
+            "lender": {"type": "string"},
+            "account_number": {"type": "string"},
+            "due_day": {"type": "integer"},
+            "is_tax_deductible": {"type": "boolean"},
+            "auto_pay_enabled": {"type": "boolean"}
+          },
+          "required": [
+            "debt_type", "status", "balance", "apr", "min_payment", "risk_score",
+            "risk_level", "is_tax_deductible", "auto_pay_enabled"
+          ]
+        }
+      ]
+    },
+    "Portfolio": {
+      "allOf": [
+        {"$ref": "#/definitions/Wealth"},
+        {
+          "type": "object",
+          "properties": {
+            "investments": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Investment"}
+            },
+            "risk_profile": {"$ref": "#/definitions/RiskProfile"},
+            "strategy_label": {"type": "string"}
+          },
+          "required": ["investments"]
+        }
+      ]
+    },
+    "LifecyclePhase": {
+      "type": "string",
+      "enum": [
+        "surviving", "stabilizing", "maintaining", "scaling", "thriving", "retiring"
+      ]
+    },
+    "Finance": {
+      "type": "object",
+      "properties": {
+        "user_id": {"type": "string"},
+        "allocations": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/Allocation"}
+        },
+        "expenses": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/Expense"}
+        },
+        "income_streams": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/Income"}
+        },
+        "debts": {"type": "array", "items": {"$ref": "#/definitions/Debt"}},
+        "investments": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/Investment"}
+        },
+        "portfolios": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/Portfolio"}
+        },
+        "services": {"type": "array", "items": {"$ref": "#/definitions/Service"}},
+        "roles": {"type": "array", "items": {"type": "string"}},
+        "features": {"type": "array", "items": {"type": "string"}},
+        "lifecycle_phase": {"$ref": "#/definitions/LifecyclePhase"},
+        "risk_profile": {"$ref": "#/definitions/RiskProfile"},
+        "notes": {"type": "string"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
+      },
+      "required": ["user_id", "allocations", "expenses", "income_streams", "debts",
+        "investments", "portfolios", "services", "roles", "features", "lifecycle_phase",
+        "created_at", "updated_at"]
+    },
+    "FinanceSummary": {
+      "type": "object",
+      "properties": {
+        "net_worth": {"type": "number"},
+        "investment_count": {"type": "integer"},
+        "debt_count": {"type": "integer"},
+        "allocation_count": {"type": "integer"}
+      },
+      "required": ["net_worth", "investment_count", "debt_count", "allocation_count"]
+    }
+  }
+}

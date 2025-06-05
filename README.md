@@ -33,14 +33,14 @@ The FastAPI service lives under `services/api`. It uses Keycloak for authenticat
 
 Set the following environment variables with your Google credentials:
 
-```
+```bash
 GOOGLE_CLIENT_ID=<client id>
 GOOGLE_CLIENT_SECRET=<client secret>
 ```
 
 Start the API for development with:
 
-```
+```bash
 uvicorn services.api.main:app --reload
 ```
 
@@ -114,6 +114,49 @@ nix develop
 ```
 
 The dev container is configured to install Nix and use this flake, providing a
-consistent setup across machines. It also installs MegaLinter so you can run
-`task lint` directly inside the container.
+consistent setup across machines. The devtools feature installs MegaLinter so
+you can run `task lint` directly inside the container.
 
+## Pre-commit hooks
+
+Fast checks run automatically via [pre-commit](https://pre-commit.com/). The dev
+container installs the tool and runs `pre-commit install` for you. If working
+outside the container make sure `pre-commit` is available and run:
+
+```bash
+pre-commit install
+```
+
+Hooks like Black and Prettier will then execute before each commit.
+
+## Secret scanning
+
+The repository includes a [gitleaks](https://github.com/gitleaks/gitleaks)
+configuration. Scan for secrets locally with:
+
+```bash
+task secrets
+```
+
+The pre-commit hook also runs gitleaks using the `.gitleaks.toml` file.
+
+## Commit messages
+
+This repository uses [commitlint](https://commitlint.js.org/) to enforce the
+[Conventional Commits](https://www.conventionalcommits.org/) specification.
+After running `pnpm install` Husky installs a `commit-msg` hook that runs
+commitlint automatically. Make sure your commit messages follow the standard so
+the hook passes.
+
+
+## Documentation
+
+The documentation is built with [Docusaurus](https://docusaurus.io). To run it locally:
+
+```bash
+cd docs
+pnpm install
+pnpm start
+```
+
+Changes pushed to `main` will automatically build and publish the site to GitHub Pages.

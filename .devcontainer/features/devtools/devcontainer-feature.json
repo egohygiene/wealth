@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "name": "devtools",
     "documentationURL": "",
-    "description": "Installs devtools for the project.",
+    "description": "Installs devtools and MegaLinter Runner for the project.",
     "options": {
         "asdf_version": {
             "type": "string",

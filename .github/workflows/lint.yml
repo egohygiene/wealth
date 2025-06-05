@@ -1,5 +1,5 @@
 ---
-name: MegaLinter
+name: megalint
 
 'on':
   push:

@@ -1,6 +1,6 @@
 # devtools
 
-Installs [asdf](https://asdf-vm.com/), the [Taskfile](https://taskfile.dev/#/) binary, and the [MegaLinter Runner](https://github.com/oxsecurity/megalinter) inside the dev container.
+Uses Nix packages [asdf-vm](https://asdf-vm.com/) and [go-task](https://taskfile.dev/#/) and installs the [MegaLinter Runner](https://github.com/oxsecurity/megalinter) inside the dev container.
 
 ## Example Usage
 
@@ -15,8 +15,8 @@ Installs [asdf](https://asdf-vm.com/), the [Taskfile](https://taskfile.dev/#/) b
 
 | Option Id | Description | Type | Default |
 |-----------|-------------|------|---------|
-| `asdf_version` | Version of asdf to install. | string | `latest` |
-| `taskfile_version` | Version of Taskfile binary to install. | string | `latest` |
+| `asdf_version` | **Ignored** - asdf is provided via Nix. | string | `latest` |
+| `taskfile_version` | **Ignored** - Taskfile is provided via Nix. | string | `latest` |
 
 ## OS Support
 

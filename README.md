@@ -129,6 +129,17 @@ pre-commit install
 
 Hooks like Black and Prettier will then execute before each commit.
 
+## Secret scanning
+
+The repository includes a [gitleaks](https://github.com/gitleaks/gitleaks)
+configuration. Scan for secrets locally with:
+
+```bash
+task secrets
+```
+
+The pre-commit hook also runs gitleaks using the `.gitleaks.toml` file.
+
 ## Commit messages
 
 This repository uses [commitlint](https://commitlint.js.org/) to enforce the

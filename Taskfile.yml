@@ -11,3 +11,8 @@ tasks:
     desc: Run MegaLinter with auto-fix
     cmds:
       - mega-linter-runner --path . --fix
+
+  secrets:
+    desc: Scan for secrets using gitleaks
+    cmds:
+      - gitleaks detect --source . --config=.gitleaks.toml --redact

@@ -1172,8 +1172,10 @@ asdf::verify() {
 # -----------------------------------------------------------------------------
 asdf::install() {
     local repo_url="https://github.com/asdf-vm/asdf"
-    local binary_path="$(asdf::home)/bin/asdf"
-    local version="$(asdf::version)"
+    local binary_path
+    binary_path="$(asdf::home)/bin/asdf"
+    local version
+    version="$(asdf::version)"
 
     # Ensure required directories exist and are owned by the vscode user
     mkdir -p "$(asdf::home)" "$(asdf::data_dir)"

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { VisXYContainer, VisLine, VisAxis } from 'unovis'
+import { VisXYContainer, VisLine, VisAxis } from '@unovis/ts'
 
 export default function Chart() {
   const ref = useRef<HTMLDivElement>(null)

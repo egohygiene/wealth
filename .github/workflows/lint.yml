@@ -1,5 +1,5 @@
 ---
-name: megalint
+name: Mega Linter
 
 'on':
   push:
@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: '20'
       - name: Run MegaLinter
-        run: npx mega-linter-runner --path .
+        run: npx mega-linter-runner --path . --reporter markdown,html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_OUTPUT_FOLDER: reports/megalinter

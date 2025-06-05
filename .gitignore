@@ -126,5 +126,7 @@ apps/ui/dist/
 result
 .direnv/
 
-.mega-linter-reports/
+reports/
+!reports/
+!reports/.gitkeep
 !apps/ui/pnpm-lock.yaml

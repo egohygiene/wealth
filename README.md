@@ -148,3 +148,15 @@ After running `pnpm install` Husky installs a `commit-msg` hook that runs
 commitlint automatically. Make sure your commit messages follow the standard so
 the hook passes.
 
+
+## Documentation
+
+The documentation is built with [Docusaurus](https://docusaurus.io). To run it locally:
+
+```bash
+cd docs
+pnpm install
+pnpm start
+```
+
+Changes pushed to `main` will automatically build and publish the site to GitHub Pages.

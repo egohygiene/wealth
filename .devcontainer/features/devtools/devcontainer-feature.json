@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "name": "devtools",
     "documentationURL": "",
-    "description": "Installs devtools and MegaLinter Runner for the project.",
+    "description": "Verifies devtools and installs MegaLinter Runner for the project.",
     "options": {
         "asdf_version": {
             "type": "string",
@@ -32,12 +32,12 @@
         "ASDF_DATA_DIR": "/home/vscode/.asdf/data",
         "ASDF_SHIMS_DIR": "/home/vscode/.asdf/data/shims",
         // "ASDF_CONFIG_FILE": "/home/vscode/.asdf/asdfrc",
-        "TASKFILE_HOME_DIR": "/home/vscode/.taskfile",
-        "PATH": "/home/vscode/.asdf/data/shims:/home/vscode/.asdf/bin:/home/vscode/.taskfile:${PATH}"
+        "TASKFILE_HOME_DIR": "/home/vscode/.taskfile"
     },
     "mounts": [],
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils",
-        "ghcr.io/devcontainers/features/docker-in-docker"
+        "ghcr.io/devcontainers/features/docker-in-docker",
+        "ghcr.io/devcontainers/features/nix"
     ]
 }

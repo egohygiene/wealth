@@ -1154,8 +1154,13 @@ asdf::verify() {
         local version
         version="$("$binary_path" --version 2>/dev/null || echo "Version info not available")"
         log::success "✅ ASDF installed at $binary_path: $version"
+    elif command -v asdf >/dev/null 2>&1; then
+        binary_path="$(command -v asdf)"
+        local version
+        version="$("$binary_path" --version 2>/dev/null || echo "Version info not available")"
+        log::success "✅ ASDF available at $binary_path: $version"
     else
-        log::error "❌ ASDF not found at $binary_path"
+        log::error "❌ ASDF not found"
         return 1
     fi
 }
@@ -1381,8 +1386,13 @@ taskfile::verify() {
         local version
         version="$("$binary_path" --version 2>/dev/null || "$binary_path" -v 2>/dev/null || echo "Version info not available")"
         log::success "✅ Taskfile installed at $binary_path: $version"
+    elif command -v task >/dev/null 2>&1; then
+        binary_path="$(command -v task)"
+        local version
+        version="$("$binary_path" --version 2>/dev/null || "$binary_path" -v 2>/dev/null || echo "Version info not available")"
+        log::success "✅ Taskfile available at $binary_path: $version"
     else
-        log::error "❌ Taskfile not found at $binary_path"
+        log::error "❌ Taskfile not found"
         return 1
     fi
 }
@@ -1455,9 +1465,9 @@ install::mega_linter() {
 # -----------------------------------------------------------------------------
 install() {
     log "🔧 Installing development tools..."
-    install::asdf
+    asdf::verify
     install_asdf_plugins
-    install::taskfile
+    taskfile::verify
     install::mega_linter
     log::success "🔧 Development tools installation complete."
 }

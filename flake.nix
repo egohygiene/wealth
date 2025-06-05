@@ -23,10 +23,12 @@
               pkgs.pre-commit
               pkgs.black
               pkgs.nodePackages.prettier
+              pkgs.go-task
+              pkgs.asdf-vm
             ];
 
           shellHook = ''
-            echo "✅ dev shell ready (Node, Python, Poetry, PNPM)"
+            echo "✅ dev shell ready (Node, Python, Poetry, PNPM, Taskfile, ASDF)"
           '';
         };
       });

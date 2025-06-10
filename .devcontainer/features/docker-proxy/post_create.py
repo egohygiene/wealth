@@ -42,9 +42,11 @@ def safe_mkdir(path: Path) -> None:
     """Ensure a directory exists."""
     path.mkdir(parents=True, exist_ok=True)
 
+
 def safe_mkdir_root(path: Path) -> None:
     """Create a directory with sudo using 'mkdir -p'."""
     run(["sudo", "mkdir", "-p", str(path)])
+
 
 def write_json_if_changed(path: Path, new_data: Dict) -> None:
     """Write JSON to a file only if the contents have changed."""
@@ -82,7 +84,11 @@ def setup_docker_config() -> None:
     new_cfg = cfg.copy()
     proxies: Dict[str, str] = {}
 
-    for env_var, key in [("HTTP_PROXY", "httpProxy"), ("HTTPS_PROXY", "httpsProxy"), ("NO_PROXY", "noProxy")]:
+    for env_var, key in [
+        ("HTTP_PROXY", "httpProxy"),
+        ("HTTPS_PROXY", "httpsProxy"),
+        ("NO_PROXY", "noProxy"),
+    ]:
         val = os.environ.get(env_var) or os.environ.get(env_var.lower())
         if val:
             proxies[key] = val
@@ -130,7 +136,11 @@ def setup_systemd_proxy() -> None:
     safe_mkdir_root(SYSTEMD_DIR)
 
     if not SYSTEMD_PROXY_FILE.exists():
-        proxy_vars = [("HTTP_PROXY", "http_proxy"), ("HTTPS_PROXY", "https_proxy"), ("NO_PROXY", "no_proxy")]
+        proxy_vars = [
+            ("HTTP_PROXY", "http_proxy"),
+            ("HTTPS_PROXY", "https_proxy"),
+            ("NO_PROXY", "no_proxy"),
+        ]
         env_lines: List[str] = []
 
         for upper, lower in proxy_vars:
@@ -187,6 +197,65 @@ def verify_docker_connection() -> None:
         sys.exit(1)
 
 
+def pretty_print_file(path: Path) -> None:
+    """Display file contents in a human-friendly way."""
+    if not path.exists():
+        log(f"⚠️ {path} does not exist.")
+        return
+
+    log(f"📄 {path}:")
+    try:
+        output = subprocess.run(
+            ["sudo", "cat", str(path)], capture_output=True, text=True, check=True
+        ).stdout
+    except subprocess.CalledProcessError as e:
+        log(f"❌ Failed to read {path}: {e}")
+        return
+
+    try:
+        data = json.loads(output)
+        print(json.dumps(data, indent=2))
+    except Exception:
+        print(output)
+
+
+def verify_proxy_settings() -> None:
+    """Confirm that proxy configuration files exist and contain proxy info."""
+    log("Verifying Docker proxy configuration files...")
+
+    ok = True
+
+    if SYSTEMD_PROXY_FILE.exists():
+        log(f"✅ Found {SYSTEMD_PROXY_FILE}")
+    else:
+        log(f"❌ Missing {SYSTEMD_PROXY_FILE}")
+        ok = False
+
+    if DOCKER_CONFIG_JSON.exists():
+        try:
+            cfg = json.loads(DOCKER_CONFIG_JSON.read_text())
+            if cfg.get("proxies", {}).get("default"):
+                log("✅ Proxy settings present in config.json")
+            else:
+                log("⚠️ No proxy settings detected in config.json")
+                ok = False
+        except Exception as e:
+            log(f"❌ Failed to parse {DOCKER_CONFIG_JSON}: {e}")
+            ok = False
+    else:
+        log(f"❌ Missing {DOCKER_CONFIG_JSON}")
+        ok = False
+
+    if ok:
+        log("✅ Proxy settings applied successfully.")
+    else:
+        log("⚠️ Proxy settings may not have been fully applied.")
+
+    pretty_print_file(DAEMON_JSON)
+    pretty_print_file(DOCKER_CONFIG_JSON)
+    pretty_print_file(SYSTEMD_PROXY_FILE)
+
+
 def main() -> None:
     """Main proxy setup flow."""
     log("Setting up development proxy environment...")
@@ -197,6 +266,7 @@ def main() -> None:
     reload_systemd()
     restart_docker_daemon()
     verify_docker_connection()
+    verify_proxy_settings()
     log("✅ Dev container postCreate setup finished. Docker is ready.")
 
 
